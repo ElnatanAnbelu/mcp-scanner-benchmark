@@ -44,8 +44,8 @@ def font(names: tuple[str, ...], size: int, bold: bool = False) -> ImageFont.Fre
     return ImageFont.load_default()
 
 
-def load_rows() -> list[tuple[str, str, str, bool]]:
-    """(name, recall, pairs, is_failure) straight from the results file."""
+def load_rows() -> list[tuple[str, str, str, str, bool]]:
+    """(name, recall, pairs, note, is_failure) straight from the results file."""
     data = json.loads(RESULTS.read_text(encoding="utf-8"))
     rows = []
     for a in data.get("adapters", []):
@@ -53,18 +53,24 @@ def load_rows() -> list[tuple[str, str, str, bool]]:
         if not counts:
             continue
         scored = a.get("pairs_scored", 0)
-        if not scored and counts.get("errors"):
-            rows.append((a["adapter"], "", "crashes on every case", True))
-            continue
         if not scored:
+            if counts.get("errors"):
+                rows.append((a["adapter"], "-", "crashes on every case", "", True))
             continue
         recall = a.get("recall")
         disc = a.get("pairs_discriminated", 0)
+        # A tool that only reads metadata can see two pairs here. Saying so keeps 2 of 2
+        # from reading as a win over 1 of 13, which covers a far wider surface.
+        note = ""
+        surfaces = a.get("surfaces") or []
+        if scored <= 2 and surfaces:
+            note = f"{'/'.join(surfaces)} only"
         rows.append((a["adapter"],
-                     f"{recall * 100:.0f}%" if recall is not None else "",
+                     f"{recall * 100:.0f}%" if recall is not None else "-",
                      f"{disc} of {scored}",
+                     note,
                      disc * 2 < scored))
-    rows.sort(key=lambda r: (not r[3], r[0]))     # failures first
+    rows.sort(key=lambda r: (not r[4], r[0]))     # failures first
     return rows
 
 
@@ -81,6 +87,7 @@ def main() -> int:
     mono = font(MONO, 25)
     mono_small = font(MONO, 21)
     small = font(SANS, 21)
+    note_font = font(SANS, 18)
 
     d.text((70, 62), "MCP Scanner Benchmark", font=title, fill=FG)
     d.text((70, 126), "Can a scanner tell a vulnerability from its fix?", font=lede, fill=MUTED)
@@ -92,11 +99,14 @@ def main() -> int:
     d.text((830, y), "pairs it told apart", font=small, fill=MUTED)
     y += 40
 
-    for name, recall, pairs, failing in load_rows()[:5]:
+    for name, recall, pairs, note, failing in load_rows()[:5]:
         colour = ACCENT if failing else OK
         d.text((70, y), name[:40], font=mono_small, fill=FG)
-        d.text((640, y), recall, font=mono, fill=FG if recall else MUTED)
+        d.text((640, y), recall, font=mono, fill=FG if recall != "-" else MUTED)
         d.text((830, y), pairs, font=mono, fill=colour)
+        if note:
+            d.text((830 + int(d.textlength(pairs, font=mono)) + 14, y + 5),
+                   note, font=note_font, fill=MUTED)
         y += 44
 
     d.line([(70, y + 14), (W - 70, y + 14)], fill=RULE, width=2)
