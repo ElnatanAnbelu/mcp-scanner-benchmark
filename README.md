@@ -195,7 +195,7 @@ I tried, Mcpwn is the only one that drives a live server and confirms findings w
 oracle. It crashes before it gets there. `tests/state_desync.py:63` calls
 `self.pentester.send_notification(...)`, which is defined nowhere in the repository, and the
 desync test runs unconditionally before everything else, so `--quick` and `--rce-only` crash the
-same way. All 17 runtime cases error identically.
+same way. All 21 runtime cases error identically.
 
 This is not a regression. The call arrived in the repository's initial commit and no commit
 since has touched it, so every commit and the `v1.0.0` tag carry it, and running `v1.0.0`

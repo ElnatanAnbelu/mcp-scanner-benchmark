@@ -11,8 +11,9 @@ sink reached through a validated path, an `exec` on a hardcoded constant, a trav
 join that resolves inside a jail. Those are the cases that separate a real scanner from a
 grep for `subprocess`.
 
-Target mix: roughly 60% positive, 40% negative, with negatives deliberately paired to
-positives so a scanner cannot pass by pattern-matching the filename or the tool description.
+Pairing fixes the balance at 50/50: every vulnerable case has exactly one safe twin, so the
+corpus cannot drift toward either label. The twins are written to resist pattern matching on
+the filename, the tool name or the description, since those are identical across a pair.
 
 ## truth.yaml
 
