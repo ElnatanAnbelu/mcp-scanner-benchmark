@@ -334,3 +334,17 @@ scanners installed and tells you how to install them.
 
 Payloads are local and inert. They echo a marker string and nothing else, and no case touches
 anything outside its own directory. See [SECURITY.md](SECURITY.md).
+
+## Keeping the numbers honest
+
+Every result on this page is stamped with the version it was measured against, because a
+scanner that improves next month does not make the old number a lie, it makes it dated.
+
+`tools/check-drift.py` asks PyPI, npm, crates.io and GitHub which of the measured tools have
+shipped something newer, and prints what has moved. A monthly job runs it and edits a single
+open issue, so the gap between what is published and what upstream ships is visible to anyone
+reading the repository rather than only to whoever last ran the harness.
+
+```console
+python3 tools/check-drift.py
+```
