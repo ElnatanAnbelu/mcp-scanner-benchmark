@@ -27,6 +27,6 @@ proof:
 pair: authz-002-safe
 notes: >
   The server holds a privileged cross-tenant view and acts on the tenant the caller
-  names, never checking it against the session. No shell, no filesystem, no network , 
+  names, never checking it against the session. No shell, no filesystem, no network.
   nothing a CWE-78/22/918 taint analysis is looking for. A second authz flavour after
   authz-001 so the class result does not rest on a single case.

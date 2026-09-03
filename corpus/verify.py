@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify every corpus label by executing it.
 
-A benchmark whose ground truth is asserted rather than demonstrated is worth nothing , 
+A benchmark whose ground truth is asserted rather than demonstrated is worth nothing.
 the first reviewer to find a mislabeled case discards the whole leaderboard. So every
 case carries a `proof` block, and this runs it:
 

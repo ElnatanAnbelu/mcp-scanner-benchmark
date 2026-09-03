@@ -135,7 +135,7 @@ class CiscoStdioYara(Adapter):
             if not isinstance(item, dict):
                 continue
             # Two independent signals: a per-analyzer finding count, and an is_safe
-            # verdict. Trust either one flagging, and record when they disagree , 
+            # verdict. Trust either one flagging, and record when they disagree.
             # a scanner contradicting itself is worth reporting, not silently resolving.
             total = _total_findings(item.get("findings") or {})
             is_safe = item.get("is_safe")

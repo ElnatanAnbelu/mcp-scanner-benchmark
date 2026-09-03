@@ -86,7 +86,9 @@ directory. Nothing in a proof may touch anything outside it.
 | CWE-22 | Path traversal | Well covered |
 | CWE-918 | SSRF | Well covered |
 | tool-poisoning | Malicious instructions in tool descriptions | Well covered |
-| **authz-session** | OAuth token passthrough, confused deputy, session hijack, DNS rebinding | **Not covered by any scanner found** |
+| **authz-session** | Broken object-level access, confused deputy, privilege escalation | **Barely covered** |
 
-The first four establish the benchmark is measuring the same thing the field claims to detect.
-The fifth is the finding: every existing tool is expected to score near zero on it.
+The first four establish that the benchmark measures the same thing the field claims to detect.
+The fifth is where the results landed: of the scanners measured, only MCTS discriminated any
+authorization pair, and it did so on one of three variants while reporting SSRF findings for a
+file with no network code in it.

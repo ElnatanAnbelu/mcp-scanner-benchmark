@@ -28,7 +28,7 @@ pair: cmd-injection-002-js-safe
 notes: >
   The JavaScript twin of cmd-injection-001: child_process.exec on an interpolated
   template string, the same defect in the language half the MCP ecosystem is written
-  in. The pair exists because language coverage turned out to be a real axis , 
+  in. The pair exists because language coverage turned out to be a real axis.
   mcp-watch scores 1 finding on this defect in JS and 0 on the identical defect in
   Python, which is a coverage gap rather than a detection failure and has to be
   scored as one.
