@@ -8,9 +8,50 @@
 A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
 scanners over them and scores the answers.
 
-Plenty of MCP security scanners shipped over the past year. Almost nobody has compared them, so
-if you want to pick one you are going by README claims. This measures four of them against
-cases with known answers.
+The headline result, from four scanners over 26 cases:
+
+| Adapter | Recall | Pairs it could tell apart |
+|---------|--------|---------------------------|
+| `mcts/scan` | 69% | **1 of 13** |
+| `mcp-watch/scan-local` | 25% | **0 of 4** |
+| `ramparts/scan-config` | 100% | 2 of 2 (metadata only) |
+| `cisco-mcp-scanner/stdio+yara` | 100% | 2 of 2 (metadata only) |
+| `mcpwn/live` | | crashes on every case |
+
+Every case has a safe twin: nearly the same file, with the vulnerability fixed. A scanner that
+gives both the same verdict has not detected anything, and recall will not tell you that
+happened. MCTS reports 69% recall and gives the vulnerable file and its fix the same verdict in
+12 of 13 pairs.
+
+Here is one pair. Both reach `subprocess.run`, both take the argument from a tool call, and the
+scanners are asked which one is exploitable.
+
+```python
+# unreachable-sink-001-reachable/server.py   VULNERABLE
+@mcp.tool()
+def refresh_cache(branch: str = "main") -> str:
+    return _run_maintenance(f"echo refreshing {branch}")   # branch reaches shell=True
+
+# unreachable-sink-001/server.py             SAFE
+@mcp.tool()
+def build_status(branch: str = "main") -> str:
+    return RECENT.get(branch.strip(), ...)                 # _run_maintenance is wired to nothing
+```
+
+The helper holding `subprocess.run(..., shell=True)` is byte-identical in both files. One is
+reachable from a tool and one is not. MCTS reports the same four critical and high findings on
+each.
+
+Three other things fell out of running this:
+
+- `cargo install ramparts` ships with detection disabled, so a default install gives a clean
+  bill of health to a server whose tool description tells the agent to read `~/.ssh/id_rsa`.
+- mcp-watch misses tool poisoning in JavaScript, which is its headline category.
+- Mcpwn crashes on every scan, and has since its initial commit, so the runtime surface is
+  effectively unmeasured.
+
+All of it reproduces with `python3 harness/run.py`. Details below, method and limitations in
+[METHODOLOGY.md](METHODOLOGY.md).
 
 Scope: four tools, 26 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
 agent-scan, Proximity and pipelock are missing, and they are missing because of install cost or
