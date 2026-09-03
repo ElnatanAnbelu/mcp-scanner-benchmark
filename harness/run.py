@@ -107,6 +107,7 @@ def score(adapter: adapters.Adapter, cases: list[dict]) -> dict:
     f1 = (2 * precision * recall / (precision + recall)
           if precision and recall and (precision + recall) else None)
     return {"adapter": adapter.name, "version": adapter.resolve_version(),
+            "scored_with": adapter.scored_with,
             "surfaces": list(adapter.surfaces), "languages": list(adapter.languages),
             "counts": counts, "precision": precision, "recall": recall, "f1": f1,
             "per_class": per_class, "rows": rows,
@@ -147,6 +148,8 @@ def main(argv: list[str] | None = None) -> int:
         version = adapter.resolve_version()
         print(f"\n{adapter.name}{' ' + version if version else ''}"
               f"  (surfaces: {', '.join(adapter.surfaces)})")
+        if adapter.scored_with:
+            print(f"  scored with {adapter.scored_with}")
         result = score(adapter, cases)
         report["adapters"].append(result)
         for row in result["rows"]:

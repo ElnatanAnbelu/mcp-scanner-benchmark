@@ -55,6 +55,7 @@ class Adapter:
     surfaces: tuple[str, ...] = ()
     languages: tuple[str, ...] = ("python", "javascript", "typescript")
     requires = ""                      # what is missing when unavailable
+    scored_with = ""                   # which engines were on, when not all of them were
 
     def available(self) -> bool:
         raise NotImplementedError
@@ -94,6 +95,7 @@ class CiscoStdioYara(Adapter):
     """
 
     name = "cisco-mcp-scanner/stdio+yara"
+    scored_with = "YARA analyser only; --analyzers yara"
     surfaces = ("metadata",)
     languages = ("python", "javascript", "typescript")   # reads a live server, not source
     requires = "pip install cisco-ai-mcp-scanner"
@@ -246,6 +248,7 @@ class Ramparts(Adapter):
     """
 
     name = "ramparts/scan-config"
+    scored_with = "YARA rules only; its LLM analyser is unconfigured"
     surfaces = ("metadata",)
     languages = ("python", "javascript", "typescript")   # reads a live server, not source
     requires = "cargo install ramparts && tools/setup-ramparts.sh"

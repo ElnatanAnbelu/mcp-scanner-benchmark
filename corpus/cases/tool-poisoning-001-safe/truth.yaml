@@ -11,7 +11,6 @@ surfaces: [metadata, source]
 entry:
   tool: convert
   parameter: description
-  reachable: false
 
 proof:
   mode: metadata

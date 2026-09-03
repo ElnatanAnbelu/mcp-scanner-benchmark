@@ -101,6 +101,16 @@ def lint(truth: dict[str, Any], case_dir: Path, r: Result) -> None:
                     )
         r.checks += 3
 
+    # `reachable` answers "can the sink be reached", and a safe case has no sink. It was
+    # boilerplate on every safe case, contradicting both the schema and, in one file, its
+    # own notes two lines below it.
+    entry = truth.get("entry") or {}
+    if verdict == "safe" and "reachable" in entry:
+        r.errors.append("safe case declares entry.reachable; it has no sink to reach")
+    if verdict == "vulnerable" and "reachable" not in entry:
+        r.errors.append("vulnerable case must declare entry.reachable")
+    r.checks += 1
+
     pair = truth.get("pair")
     if pair:
         pair_truth = CASES_DIR / str(pair) / "truth.yaml"
@@ -178,6 +188,46 @@ async def tool_metadata(module: Any) -> str:
     return "\n".join(parts)
 
 
+class _Loopback:
+    """A throwaway HTTP server on 127.0.0.1, for proving SSRF rather than asserting it.
+
+    A file:// payload demonstrates arbitrary file read, which is a different weakness
+    from server-side request forgery. SSRF is reaching an address the caller should not
+    be able to reach, so the proof needs something listening on one. This binds to
+    loopback on a random port, serves the oracle to any GET, and goes away afterwards.
+    Nothing is exposed off the machine.
+    """
+
+    def __init__(self, body: str) -> None:
+        from http.server import BaseHTTPRequestHandler, HTTPServer
+
+        payload = body.encode()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:                      # noqa: N802
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *_: Any) -> None:
+                pass
+
+        self.server = HTTPServer(("127.0.0.1", 0), Handler)
+        self.url = f"http://127.0.0.1:{self.server.server_address[1]}"
+
+    def __enter__(self) -> "_Loopback":
+        import threading
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+        return self
+
+    def __exit__(self, *_: Any) -> None:
+        self.server.shutdown()
+        self.server.server_close()
+
+
 def _substitute(value: Any, case_dir: Path) -> Any:
     """{case_dir} in a proof argument becomes this case's absolute path.
 
@@ -240,8 +290,24 @@ def prove(truth: dict[str, Any], case_dir: Path, r: Result) -> None:
         r.errors.append(f"{truth.get('verdict')} case expects {expect!r}, should be {wanted!r}")
 
     language = str(truth.get("language", "python"))
-    args = _substitute(dict(proof.get("args") or {}), case_dir)
+    args = dict(proof.get("args") or {})
 
+    # A case that needs something listening says so; {listener} becomes its URL.
+    if proof.get("listener"):
+        with _Loopback(oracle) as loop:
+            args = _substitute({k: str(v).replace("{listener}", loop.url)
+                                for k, v in args.items()}, case_dir)
+            _run_proof(truth, case_dir, proof, args, oracle, expect, mode, language, r)
+        return
+    args = _substitute(args, case_dir)
+
+    _run_proof(truth, case_dir, proof, args, oracle, expect, mode, language, r)
+
+
+def _run_proof(truth: dict[str, Any], case_dir: Path, proof: dict[str, Any],
+               args: dict[str, Any], oracle: str, expect: str, mode: str,
+               language: str, r: Result) -> None:
+    """Execute one proof and record the outcome. Shared by both proof paths."""
     if language in ("javascript", "typescript"):
         # "--metadata" makes the runner list tools instead of calling one, matching the
         # Python metadata path: tool poisoning hides in what a client reads, not in

@@ -197,7 +197,14 @@ case; reporting that as 0% recall would conflate "cannot run" with "runs and fin
 ### 4.5 Availability is a result
 
 A capability behind a paid API key is listed and unscored rather than omitted. Cisco's
-behavioural mode and ramparts' default install both fall here, and both are reported.
+behavioural mode falls here.
+
+Both scored metadata adapters run with their LLM analyser off, and each says so in a
+`scored_with` line printed above its score and recorded in the results file. ramparts is
+scored on its YARA rules with `llm.api_key` empty; Cisco is scored with `--analyzers yara`.
+That is the same condition for which Cisco's behavioural mode is marked unavailable, so
+naming it keeps one table from treating two tools differently. Neither number should be read
+as what the tool does with everything switched on.
 
 ---
 

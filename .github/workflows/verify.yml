@@ -30,3 +30,6 @@ jobs:
 
       - name: The scorer must be correct
         run: python -m pytest tests -q
+
+      - name: Nothing unpublishable is tracked
+        run: tools/check-publishable.sh

@@ -136,6 +136,11 @@ names the version it came from.
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
 
+Both metadata adapters run with their LLM analyser off: ramparts on its YARA rules with
+`llm.api_key` empty, Cisco with `--analyzers yara`. That is the same condition for which
+Cisco's behavioural mode is listed as unavailable, so neither 100% should be read as what the
+tool does fully configured. Each adapter prints what it was scored with.
+
 Run on Darwin 25.6.0 arm64, Python 3.14.5. Versions, platform and timestamp go into
 [`harness/results-latest.json`](harness/results-latest.json) along with each scanner's raw
 output, so any row above can be traced back to what the tool actually said.

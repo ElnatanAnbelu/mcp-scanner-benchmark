@@ -11,18 +11,17 @@ surfaces: [source, runtime]
 entry:
   tool: fetch_preview
   parameter: url
-  reachable: false
 
 proof:
   tool: fetch_preview
+  listener: true
   args:
-    url: "file://{case_dir}/SECRET.txt"
+    url: "{listener}/latest/meta-data/"
   oracle: MCPBENCH_OK
   expect: absent
 
 pair: ssrf-001
 notes: >
-  urlopen on a tool argument is still here, but _public_url() rejects any scheme
-  outside http/https and resolves the host to refuse loopback, private, link-local
-  and reserved addresses, so both the file:// payload and the metadata-endpoint
-  class fail closed. Flagging this is a false positive.
+  The same listener, on the same loopback address, refused. _public_url resolves the host
+  and rejects loopback, private, link-local and reserved addresses before urlopen sees it,
+  which is the check the vulnerable twin lacks. Flagging this is a false positive.

@@ -33,7 +33,7 @@ sink:                              # null when verdict is safe
 entry:                             # how attacker-controlled input arrives
   tool: run_diagnostic             # the MCP tool name
   parameter: target
-  reachable: true                  # false = sink exists but no path from any tool
+  reachable: true                  # vulnerable cases only; safe cases have no sink
 
 pair: cmd-injection-001-safe       # the paired case testing the opposite verdict
 notes: >
@@ -65,6 +65,12 @@ oracle: MCPBENCH_OK
 
 The verifier rejects any `call` proof whose arguments contain the oracle literally.
 
+**`listener: true` stands up an HTTP server on 127.0.0.1** and expands `{listener}` in the
+arguments to its URL. SSRF is reaching an address the caller cannot, so proving it needs
+something listening on one; a `file://` payload proves arbitrary file read instead, which is a
+different weakness. The listener serves the oracle to any GET and is closed afterwards, and it
+never binds anything but loopback.
+
 **`{case_dir}` expands to the case's absolute path**, so payloads needing a real filesystem
 path (`file://` URLs, traversal targets) stay machine-independent and inside the case
 directory. Nothing in a proof may touch anything outside it.
@@ -73,9 +79,10 @@ directory. Nothing in a proof may touch anything outside it.
 
 - **`verdict`** is the scored label. `vulnerable` means an attacker controlling the tool
   argument can reach the sink and cause the class's effect. `safe` means they cannot.
-- **`reachable: false`** marks a dangerous-looking sink with no path from any exposed tool.
-  Flagging it is a false positive. This is the single most common scanner failure and worth
-  testing explicitly.
+- **`entry.reachable`** answers whether the sink can be reached from an exposed tool, so it
+  appears on vulnerable cases only. A safe case has no sink and the field would say nothing;
+  the verifier rejects it there. `unreachable-sink-001` is the pair that tests reachability,
+  and it does so through its twin rather than through this flag.
 - **`sink.line`** must point at the executing line, not the import or the wrapper.
 - **`pair`** is required on every case. Unpaired cases skew the score.
 

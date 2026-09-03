@@ -8,3 +8,6 @@ config.yaml
 vendor/mcpwn
 mcts_analysis/
 vendor/mcts
+
+# Internal planning doc; lives in the private workspace, never here.
+PLAN.md

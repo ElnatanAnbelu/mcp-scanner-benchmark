@@ -11,7 +11,6 @@ surfaces: [source, runtime]
 entry:
   tool: get_report
   parameter: user
-  reachable: false
 
 proof:
   tool: get_report

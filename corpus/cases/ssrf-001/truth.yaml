@@ -19,14 +19,19 @@ entry:
 
 proof:
   tool: fetch_preview
+  listener: true
   args:
-    url: "file://{case_dir}/SECRET.txt"
+    url: "{listener}/latest/meta-data/"
   oracle: MCPBENCH_OK
   expect: present
 
 pair: ssrf-001-safe
 notes: >
-  urlopen honours whatever scheme it is handed, so file:// turns a link previewer
-  into an arbitrary file reader, the same missing check that lets http://169.254.169.254
-  reach cloud metadata. The proof uses file:// because it is provable offline and
-  stays inside the case directory; the underlying defect is one missing allowlist.
+  The proof stands up an HTTP server on 127.0.0.1 and asks the tool to fetch it. A link
+  previewer reaching a loopback address on the host it runs on is server-side request
+  forgery: the caller cannot reach that address, and the server can. The path imitates a
+  cloud metadata endpoint, which is the version of this that matters in production.
+
+  An earlier version proved this with a file:// payload. That demonstrated arbitrary file
+  read, which is a real weakness and a different one, so the class was asserted rather
+  than executed. Nothing here leaves the machine, and the listener is closed afterwards.
