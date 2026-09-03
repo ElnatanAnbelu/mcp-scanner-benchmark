@@ -166,3 +166,53 @@ def test_a_case_with_no_proof_is_rejected(cases_dir):
 def test_substitution_expands_the_case_directory(tmp_path):
     got = verify._substitute({"url": "file://{case_dir}/SECRET.txt"}, tmp_path)
     assert got["url"] == f"file://{tmp_path}/SECRET.txt"
+
+
+JS_SAFE = """\
+id: {id}
+language: javascript
+verdict: safe
+class: null
+title: js test case
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: run_it
+  parameter: value
+  reachable: false
+
+proof:
+  tool: run_it
+  args:
+    value: 'x'
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: {pair}
+notes: test
+"""
+
+
+def test_a_js_server_that_cannot_start_is_a_hard_failure(cases_dir):
+    """The Python path guards this; the JS path did not, and a broken safe twin passed.
+
+    A server that fails to boot produces no output, which reads as "payload absent" and
+    passes a safe case for the wrong reason. js_proof.mjs now exits 3 when the server
+    never starts, which is distinct from exiting 1 when a tool refuses the payload.
+    """
+    d = cases_dir / "jsbroken"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "truth.yaml").write_text(JS_SAFE.format(id="jsbroken", pair="jsbroken-pair"),
+                                  encoding="utf-8")
+    (d / "server.js").write_text('import { nope } from "does-not-exist";\n', encoding="utf-8")
+    pair = cases_dir / "jsbroken-pair"
+    pair.mkdir(parents=True, exist_ok=True)
+    (pair / "truth.yaml").write_text(JS_SAFE.format(id="jsbroken-pair", pair="jsbroken"),
+                                     encoding="utf-8")
+    (pair / "server.js").write_text("// unused\n", encoding="utf-8")
+
+    result = verify.verify(d)
+    assert any("failed to run" in e for e in result.errors), result.errors

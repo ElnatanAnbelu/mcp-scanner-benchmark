@@ -2,9 +2,8 @@
 
 Corpus case unreachable-sink-001, SAFE. See truth.yaml.
 
-Contains a genuinely dangerous sink (subprocess with shell=True, interpolating its
-argument) that no exposed tool can reach. This is the case that separates reachability
-analysis from grep.
+Holds a genuinely dangerous sink (subprocess with shell=True, interpolating its
+argument) that no exposed tool reaches. Its twin differs by one line.
 """
 from __future__ import annotations
 
@@ -18,11 +17,7 @@ RECENT = {"main": "passing", "release": "passing", "next": "failing"}
 
 
 def _run_maintenance(command: str) -> str:
-    """Operator-only helper. Kept for the migration runbook; wired to nothing.
-
-    Dangerous by construction, but it is not registered as a tool, not called from
-    any tool, and not reachable over MCP at all.
-    """
+    """Operator-only helper. Kept for the migration runbook."""
     return subprocess.run(command, shell=True, capture_output=True, text=True).stdout
 
 
@@ -40,6 +35,12 @@ def build_status(branch: str = "main") -> str:
 def list_branches() -> str:
     """List the branches with recorded build status."""
     return "\n".join(sorted(RECENT))
+
+
+@mcp.tool()
+def refresh_cache(branch: str = "main") -> str:
+    """Refresh the cached build status for a branch."""
+    return RECENT.get(branch.strip(), f"no builds recorded for {branch.strip()!r}")
 
 
 if __name__ == "__main__":

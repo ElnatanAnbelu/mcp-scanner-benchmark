@@ -5,8 +5,9 @@ How this is built, how it scores, and where it can be wrong.
 Written for someone deciding whether to trust the numbers, including the author of a tool that
 scored badly here. Decisions that could bias a result are called out as such.
 
-**What this is not.** It is not a survey of the field. Four tools are measured; several others
-exist and are not here. It is not a verdict on any tool's overall quality, and the sample is
+**What this is not.** It is not a survey of the field. Five tools are measured across six
+adapter configurations, four of which produced scores; several other scanners exist and are not
+here. It is not a verdict on any tool's overall quality, and the sample is
 small enough that no result should be read as a confidence interval.
 
 ---
@@ -71,7 +72,7 @@ Then three dimensions that separate real analysis from pattern matching:
 
 | Dimension | Pair | The question |
 |-----------|------|--------------|
-| Reachability | `unreachable-sink-001` | Byte-identical `shell=True` helper, wired to a tool in one twin and to nothing in the other. *Can the sink be reached at all?* |
+| Reachability | `unreachable-sink-001` | The same `shell=True` helper and the same three tools in both twins, differing in one line: whether `refresh_cache` passes its argument to the helper. *Can the sink be reached at all?* |
 | Taint | `untainted-sink-001` | A live shell call both twins reach; one passes a constant from a lookup table, the other falls back to the caller's string. *Does attacker input reach it?* |
 | Semantics | `authz-001/002/003`, `authz-004-js` | Broken object-level access, confused deputy, privilege escalation, and the JavaScript twin of the first. No shell, no filesystem, no network. *Is this class modelled at all?* |
 
@@ -221,6 +222,22 @@ the default-install gap is reported as a separate finding rather than as a bad s
 ---
 
 ## 6. Threats to validity
+
+**The corpus targets one SDK generation, and it is the new one.** Every Python case uses
+`MCPServer` from `mcp` 2.x, which is where `FastMCP` was renamed. Scanners written against
+`FastMCP` may under-detect these servers for that reason alone rather than for anything to do
+with their analysis. MCTS is 0.1.4 and probably predates the rename. This is the most likely
+explanation a maintainer will reach for, and it is a fair one: a tool that identifies MCP
+servers by matching `FastMCP(` would find nothing to analyse in 22 of the 26 cases. The
+JavaScript cases use `@modelcontextprotocol/sdk` 1.30.0, where `McpServer` is current, so the
+two halves of the corpus are not on equal footing here either. `requirements.txt` pins `mcp==2.1.1` so the corpus cannot shift underneath a result.
+
+The objection was tested rather than left standing. `cmd-injection-001` was rewritten to import
+`FastMCP` from `mcp.server.fastmcp` and construct `FastMCP(...)`, changing nothing else, and
+scanned again. MCTS returned an identical result: 9 findings, 5 of them critical or high, with
+the same five titles. On this evidence the SDK generation does not explain its numbers. The
+experiment covers one tool on one case and is worth repeating more broadly, but the obvious
+version of this objection does not hold.
 
 **Synthetic corpus.** The cases are small and written by one author who also knows what the
 scanners look for. Even without intent, that risks cases shaped to the expected answer. The

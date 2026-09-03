@@ -26,13 +26,28 @@ const transport = new StdioClientTransport({
 });
 const client = new Client({ name: "corpus-verifier", version: "1.0.0" });
 
+// Exit codes carry the distinction verify.py needs. A server that never started is a
+// hard failure; a tool that refused the payload is a legitimate outcome for a safe case.
+// String-matching the error message cannot tell those apart, and a safe twin whose
+// server is broken would otherwise pass for producing no output.
+const EXIT_TOOL_REFUSED = 1;
+const EXIT_SERVER_DEAD = 3;
+
 const timer = setTimeout(() => {
   console.error("timed out waiting for the server");
-  process.exit(1);
+  process.exit(EXIT_SERVER_DEAD);
 }, 30_000);
 
 try {
   await client.connect(transport);
+} catch (err) {
+  console.error(`server failed to start: ${String(err?.message ?? err)}`);
+  clearTimeout(timer);
+  await client.close().catch(() => {});
+  process.exit(EXIT_SERVER_DEAD);
+}
+
+try {
   if (metadataMode) {
     const { tools = [] } = await client.listTools();
     process.stdout.write(
@@ -51,10 +66,10 @@ try {
     process.stdout.write(text);
   }
 } catch (err) {
-  // A rejected payload is a legitimate outcome for a safe case: report it and let
-  // verify.py decide, exactly as the Python path treats a raised exception.
+  // The server is up and the tool refused the payload. That is a valid safe outcome,
+  // so report it and let verify.py decide.
   console.error(String(err?.message ?? err));
-  process.exitCode = 1;
+  process.exitCode = EXIT_TOOL_REFUSED;
 } finally {
   clearTimeout(timer);
   await client.close().catch(() => {});

@@ -174,3 +174,15 @@ def test_a_partial_run_refuses_to_overwrite_a_fuller_results_file(tmp_path, monk
 
     assert run.main(["--json", str(out), "--force"]) == 0   # asked twice, writes
     assert out.read_text(encoding="utf-8") != before
+
+
+def test_findings_keep_their_raw_payload_in_the_result():
+    """Three documents promise raw output; it has to survive into the result."""
+    class RawAdapter(FakeAdapter):
+        def scan(self, case_dir):
+            return adapters.ScanResult(
+                self.name, case_dir.name,
+                [adapters.Finding(case_dir.name, "d", "high", {"rule": "X", "line": 7})])
+
+    result = run.score(RawAdapter(), [case("v", "vulnerable", "s")])
+    assert result["rows"][0]["raw"] == [{"rule": "X", "line": 7}]

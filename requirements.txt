@@ -1,4 +1,4 @@
-mcp>=2
+mcp==2.1.1      # corpus servers use MCPServer (mcp 2.x); pinned, see METHODOLOGY 6
 pyyaml
 pytest
 pillow          # tools/make_social_preview.py only

@@ -70,9 +70,13 @@ def score(adapter: adapters.Adapter, cases: list[dict]) -> dict:
         cls = str(truth.get("class") or f"safe-pair-of:{truth.get('pair')}")
         per_class.setdefault(cls, {"tp": 0, "fp": 0, "tn": 0, "fn": 0})[outcome] += 1
 
+        # The scanner's own output, unedited. Three documents promise a disagreement can
+        # be settled by looking at what the tool actually said, and that promise needs the
+        # payload to survive serialization rather than only the summary line.
         rows.append({"case": case_id, "outcome": outcome, "findings": len(result.findings),
                      "seconds": round(result.seconds, 2),
-                     "detail": [f.detail for f in result.findings][:5]})
+                     "detail": [f.detail for f in result.findings][:5],
+                     "raw": [f.raw for f in result.findings]})
 
     # Pair discrimination: the metric raw counts hide.
     #

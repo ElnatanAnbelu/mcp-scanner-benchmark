@@ -18,10 +18,14 @@ gives both the same verdict has not detected anything, and recall will not tell 
 happened. MCTS reports 69% recall and gives the vulnerable file and its fix the same verdict in
 12 of 13 pairs.
 
-Here is one pair. Both reach `subprocess.run`, both take the argument from a tool call, and the
-scanners are asked which one is exploitable.
+Here is one pair. The two files differ in exactly one line of code.
 
 ```python
+# both files hold this helper, identically
+def _run_maintenance(command: str) -> str:
+    """Operator-only helper. Kept for the migration runbook."""
+    return subprocess.run(command, shell=True, capture_output=True, text=True).stdout
+
 # unreachable-sink-001-reachable/server.py   VULNERABLE
 @mcp.tool()
 def refresh_cache(branch: str = "main") -> str:
@@ -29,13 +33,14 @@ def refresh_cache(branch: str = "main") -> str:
 
 # unreachable-sink-001/server.py             SAFE
 @mcp.tool()
-def build_status(branch: str = "main") -> str:
-    return RECENT.get(branch.strip(), ...)                 # _run_maintenance is wired to nothing
+def refresh_cache(branch: str = "main") -> str:
+    return RECENT.get(branch.strip(), ...)                 # nothing calls _run_maintenance
 ```
 
-The helper holding `subprocess.run(..., shell=True)` is byte-identical in both files. One is
-reachable from a tool and one is not. MCTS reports the same four critical and high findings on
-each.
+Same tool name, same signature, same docstring, same helper, same other two tools. MCTS reports
+`Untrusted input may reach sink on refresh_cache` on **both** files, including the one where
+`refresh_cache` only reads a dict. It also reports six critical and high findings on the safe
+file and five on the vulnerable one.
 
 Three other things fell out of running this:
 
@@ -48,15 +53,16 @@ Three other things fell out of running this:
 All of it reproduces with `python3 harness/run.py`. Details below, method and limitations in
 [METHODOLOGY.md](METHODOLOGY.md).
 
-Scope: four tools, 26 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
+Scope: five tools, 26 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
 agent-scan, Proximity and pipelock are missing, and they are missing because of install cost or
 account requirements, not because of anything they scored. Adding a scanner is a small pull
 request.
 
 ## Status
 
-26 cases in 13 pairs, every label executed and verified. Six adapters covering four tools. Four
-of them ran: one is broken upstream, one wants a paid API key.
+26 cases in 13 pairs, every label executed and verified. Six adapter configurations over five
+tools. Four produced scores: one tool is broken upstream, and one Cisco mode wants a paid API
+key.
 
 [METHODOLOGY.md](METHODOLOGY.md) covers how the scoring works and where it can be wrong.
 
@@ -118,7 +124,7 @@ with no sink or a safe case declaring a CWE class.
 
 ## Results
 
-Six adapters over four tools, 26 cases. Reproduce with `python3 harness/run.py`. Every number
+Six adapters over five tools, 26 cases. Reproduce with `python3 harness/run.py`. Every number
 names the version it came from.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
@@ -195,7 +201,7 @@ I tried, Mcpwn is the only one that drives a live server and confirms findings w
 oracle. It crashes before it gets there. `tests/state_desync.py:63` calls
 `self.pentester.send_notification(...)`, which is defined nowhere in the repository, and the
 desync test runs unconditionally before everything else, so `--quick` and `--rce-only` crash the
-same way. All 21 runtime cases error identically.
+same way. All 22 runtime cases error identically.
 
 This is not a regression. The call arrived in the repository's initial commit and no commit
 since has touched it, so every commit and the `v1.0.0` tag carry it, and running `v1.0.0`
@@ -215,11 +221,13 @@ discrimination is a side effect rather than authorization analysis. On `authz-00
 This is why the class needed three variants. On `authz-001` by itself the result reads as a
 categorical zero, and I would have published an overclaim.
 
-**Nothing reasons about reachability or taint either.** `unreachable-sink-001` and its twin share
-a byte-identical `subprocess.run(..., shell=True)` helper, wired to a tool in one and to nothing
-in the other. `untainted-sink-001` and its twin both reach a live shell call, but one passes a
-constant from a lookup table and the other falls back to the caller's string. One word apart.
-MCTS reports the same 4 critical/high findings on both members of both pairs.
+**Nothing reasons about reachability or taint either.** `unreachable-sink-001` and its twin hold
+the same `subprocess.run(..., shell=True)` helper and the same three tools, differing in one
+line: whether `refresh_cache` passes its argument to the helper or reads a dict. MCTS reports
+`Untrusted input may reach sink on refresh_cache` on both, and more findings on the safe file
+than the vulnerable one. `untainted-sink-001` and its twin both reach a live shell call, one
+passing a constant from a lookup table and the other the caller's string, one word apart; there
+MCTS reports the same four critical and high findings on each.
 
 **MCTS scans almost nothing if you point it at a directory.** Given a case directory it returns
 one generic "Stdio MCP server trust boundary" note. Given the entrypoint file it returns nine

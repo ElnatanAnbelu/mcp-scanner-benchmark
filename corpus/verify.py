@@ -12,8 +12,9 @@ It also lints the schema: required fields, sink line pointing at real code, pair
 resolving in both directions, and the field combinations that are contradictory
 (a vulnerable case with no sink, a safe case with a class).
 
-Cases run in-process against the FastMCP tool functions. Payloads stay local and
-inert, an echo of a marker string, never a real attack.
+Python cases run in-process against the server's tool functions; JavaScript cases are
+driven over stdio by a real MCP client. Payloads stay local and inert, an echo of a
+marker string, never a real attack.
 
 Usage:  python3 corpus/verify.py [case-id ...]
 Exit:   0 all verified, 1 something failed.
@@ -113,10 +114,11 @@ def lint(truth: dict[str, Any], case_dir: Path, r: Result) -> None:
 
 
 JS_PROOF = Path(__file__).resolve().parent / "js_proof.mjs"
+JS_SERVER_DEAD = 3          # js_proof.mjs: the server failed to start
 
 
-def run_js_proof(case_dir: Path, tool: str, args: dict[str, Any]) -> tuple[str, str]:
-    """Drive a JavaScript case over stdio. Returns (stdout, error).
+def run_js_proof(case_dir: Path, tool: str, args: dict[str, Any]) -> tuple[str, str, bool]:
+    """Drive a JavaScript case over stdio. Returns (stdout, error, server_died).
 
     A JS server cannot be imported into Python, so its proof runs through a real MCP
     client, the same transport an attacker would use, which makes it the stronger
@@ -124,10 +126,10 @@ def run_js_proof(case_dir: Path, tool: str, args: dict[str, Any]) -> tuple[str, 
     """
     server = case_dir / "server.js"
     if not server.is_file():
-        return "", f"no server.js in {case_dir.name}"
+        return "", f"no server.js in {case_dir.name}", True
     node = shutil.which("node")
     if not node:
-        return "", "node not installed"
+        return "", "node not installed", True
     try:
         proc = subprocess.run(
             [node, str(JS_PROOF), str(server), tool, json.dumps(args)],
@@ -135,8 +137,12 @@ def run_js_proof(case_dir: Path, tool: str, args: dict[str, Any]) -> tuple[str, 
             cwd=str(Path(__file__).resolve().parent.parent),
         )
     except subprocess.TimeoutExpired:
-        return "", "timeout"
-    return proc.stdout, ("" if proc.returncode == 0 else (proc.stderr or "").strip()[:200])
+        return "", "timeout", True
+    err = "" if proc.returncode == 0 else (proc.stderr or "").strip()[:200]
+    # Exit 3 from js_proof.mjs means the server never started, which is a hard failure
+    # rather than a refused payload. Returned separately so a broken safe twin cannot
+    # pass for producing no output.
+    return proc.stdout, err, proc.returncode == JS_SERVER_DEAD
 
 
 def load_server(case_dir: Path):
@@ -188,7 +194,7 @@ def _substitute(value: Any, case_dir: Path) -> Any:
 
 
 def _flatten(value: Any):
-    """FastMCP returns nested content objects across versions; get to the text."""
+    """The SDK returns nested content objects across versions; get to the text."""
     if isinstance(value, (list, tuple)):
         for item in value:
             yield from _flatten(item)
@@ -241,11 +247,13 @@ def prove(truth: dict[str, Any], case_dir: Path, r: Result) -> None:
         # Python metadata path: tool poisoning hides in what a client reads, not in
         # what the code does.
         tool = "--metadata" if mode == "metadata" else str(proof["tool"])
-        output, err = run_js_proof(case_dir, tool, {} if mode == "metadata" else args)
+        output, err, server_died = run_js_proof(
+            case_dir, tool, {} if mode == "metadata" else args)
         # A payload the server refuses is a valid safe outcome; a server that never
-        # started is not. Distinguish them the way the Python path does.
-        if err and not output and "not installed" in err or "no server.js" in err:
-            r.errors.append(f"could not run the JS proof: {err}")
+        # started is not. The runner separates them by exit code rather than by
+        # matching the error text, which could not tell them apart.
+        if server_died:
+            r.errors.append(f"server.js failed to run: {err}")
             r.checks += 1
             return
         raised = err or None

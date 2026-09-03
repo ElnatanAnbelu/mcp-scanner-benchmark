@@ -2,32 +2,34 @@ id: unreachable-sink-001
 language: python
 verdict: safe
 class: null
-title: Dangerous shell sink present but reachable from no exposed tool
+title: Dangerous shell sink present, reached by no exposed tool
 
 sink: null
 
-surfaces: [source]
+surfaces: [source, runtime]
 
 entry:
-  tool: build_status
+  tool: refresh_cache
   parameter: branch
   reachable: false
 
 proof:
-  tool: build_status
+  tool: refresh_cache
   args:
-    branch: "; echo MCPBENCH\"\"_OK"
+    branch: '; echo MCPBENCH""_OK'
   oracle: MCPBENCH_OK
   expect: absent
 
 pair: unreachable-sink-001-reachable
 notes: >
-  subprocess.run(..., shell=True) on an interpolated argument sits at line 26 and is
-  as dangerous as any sink in this corpus, but _run_maintenance is registered as
-  nothing and called by nothing, so no MCP client can reach it. Every exposed tool
-  reads a dict.
+  subprocess.run(..., shell=True) on an interpolated argument sits in _run_maintenance
+  and is as dangerous as any sink in this corpus. Nothing calls it. Every exposed tool
+  reads the dict, including refresh_cache, which in the twin is the one that reaches it.
 
-  This is the reachability test. A scanner that pattern-matches sinks reports a
-  critical finding here; one that resolves paths from tool handlers reports nothing.
-  Per the field survey, unreachable-sink false positives are the most common scanner
-  failure, which makes this case worth more than its single row in the score.
+  The proof calls refresh_cache rather than some unrelated tool, so it tests the claim
+  the case actually makes: the same tool, taking the same argument, does not reach the
+  sink here.
+
+  This is the reachability test. A scanner that pattern-matches sinks reports a critical
+  finding; one that resolves paths from tool handlers reports nothing. The pair differs
+  in exactly one line of code.

@@ -2,12 +2,12 @@ id: unreachable-sink-001-reachable
 language: python
 verdict: vulnerable
 class: CWE-78
-title: The same shell sink, one line away from reachable
+title: The same shell sink, reached by one line
 
 sink:
   file: server.py
-  line: 21
-  function: subprocess.run
+  line: 43
+  function: _run_maintenance
   argument: command
 
 surfaces: [source, runtime]
@@ -20,15 +20,16 @@ entry:
 proof:
   tool: refresh_cache
   args:
-    branch: "; echo MCPBENCH\"\"_OK"
+    branch: '; echo MCPBENCH""_OK'
   oracle: MCPBENCH_OK
   expect: present
 
 pair: unreachable-sink-001
 notes: >
-  Byte-for-byte the same helper and the same sink as unreachable-sink-001. The only
-  difference is that refresh_cache passes a tool argument into it, so the shell
-  interpolation is now attacker-controlled.
+  The same helper, the same sink, the same three tools with the same names, signatures
+  and docstrings as the safe twin. One line differs: refresh_cache passes its argument
+  to _run_maintenance instead of reading the dict.
 
-  The pair is the cleanest statement of what reachability analysis is for: two files
-  that a sink-matching scanner cannot tell apart, with opposite correct answers.
+  Earlier versions of this pair swapped a no-argument tool for one taking a string,
+  which confounded reachability with "has a caller-controlled parameter". A scanner
+  could have discriminated the pair without reasoning about reachability at all.

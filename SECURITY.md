@@ -27,7 +27,10 @@ public issue is fine and faster.
 
 ## Findings about other people's tools
 
-Results here sometimes show a scanner behaving worse than its documentation suggests. Those are
-reported upstream to the tool's own tracker, reproducible in one command, rather than published
-as a surprise. If a finding about your tool is wrong or unfairly configured, the
-"My tool is scored wrong" issue template exists for exactly that and is welcome.
+Results here sometimes show a scanner behaving worse than its documentation suggests. Those go
+to the tool's own tracker, reproducible in one command, rather than being published as a
+surprise. Issues filed so far are linked from the finding they belong to; where a finding has no
+link yet, it has not been reported yet, and that is a gap rather than a decision.
+
+If a finding about your tool is wrong or unfairly configured, the "My tool is scored wrong"
+issue template exists for exactly that and is welcome.

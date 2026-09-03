@@ -2,8 +2,8 @@
 
 Corpus case unreachable-sink-001-reachable, VULNERABLE. See truth.yaml.
 
-Identical to unreachable-sink-001 except for one line: the maintenance helper is
-wired to a tool. Same sink, same helper, same file, only reachability differs.
+Holds a genuinely dangerous sink (subprocess with shell=True, interpolating its
+argument) that one exposed tool reaches. Its twin differs by one line.
 """
 from __future__ import annotations
 
@@ -29,6 +29,12 @@ def build_status(branch: str = "main") -> str:
         branch: the branch name to look up
     """
     return RECENT.get(branch.strip(), f"no builds recorded for {branch.strip()!r}")
+
+
+@mcp.tool()
+def list_branches() -> str:
+    """List the branches with recorded build status."""
+    return "\n".join(sorted(RECENT))
 
 
 @mcp.tool()
