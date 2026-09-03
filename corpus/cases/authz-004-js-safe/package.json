@@ -1,0 +1,1 @@
+{"name":"authz-004-js-safe","version":"1.0.0","type":"module","main":"server.js","dependencies":{"@modelcontextprotocol/sdk":"^1.30.0","zod":"^3.23.8"}}

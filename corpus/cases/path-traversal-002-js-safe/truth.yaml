@@ -1,0 +1,26 @@
+id: path-traversal-002-js-safe
+language: javascript
+verdict: safe
+class: null
+title: Same readFile sink, constrained by a resolved containment check (JavaScript)
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: read_note
+  parameter: name
+  reachable: false
+
+proof:
+  tool: read_note
+  args:
+    name: "../SECRET.txt"
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: path-traversal-002-js
+notes: >
+  Still path.join and readFile on a tool argument, but the candidate is resolved
+  against a realpath'd root and rejected when the relative path escapes it.

@@ -1,0 +1,30 @@
+id: path-traversal-002-js
+language: javascript
+verdict: vulnerable
+class: CWE-22
+title: Path traversal via unconstrained note filename (JavaScript)
+
+sink:
+  file: server.js
+  line: 23
+  function: readFile
+  argument: target
+
+surfaces: [source, runtime]
+
+entry:
+  tool: read_note
+  parameter: name
+  reachable: true
+
+proof:
+  tool: read_note
+  args:
+    name: "../SECRET.txt"
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: path-traversal-002-js-safe
+notes: >
+  The JavaScript twin of path-traversal-001. path.join accepts "../" and readFile
+  follows it out of the notes directory. Nothing leaves the case directory.

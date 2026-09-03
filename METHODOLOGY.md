@@ -48,8 +48,8 @@ the tools advertise:
 | Class | Pairs |
 |-------|-------|
 | CWE-78 command injection | `cmd-injection-001` (Python), `cmd-injection-002-js` (JavaScript) |
-| CWE-22 path traversal | `path-traversal-001` |
-| CWE-918 SSRF | `ssrf-001` |
+| CWE-22 path traversal | `path-traversal-001` (Python), `path-traversal-002-js` (JavaScript) |
+| CWE-918 SSRF | `ssrf-001` (Python) |
 | tool poisoning | `tool-poisoning-001` (Python), `tool-poisoning-002-js` (JavaScript) |
 
 Then three dimensions that separate real analysis from pattern matching:
@@ -58,7 +58,15 @@ Then three dimensions that separate real analysis from pattern matching:
 |-----------|------|--------------|
 | Reachability | `unreachable-sink-001` | Byte-identical `shell=True` helper, wired to a tool in one twin and to nothing in the other. *Can the sink be reached at all?* |
 | Taint | `untainted-sink-001` | A live shell call both twins reach; one passes a constant from a lookup table, the other falls back to the caller's string. *Does attacker input reach it?* |
-| Semantics | `authz-001/002/003` | Broken object-level access, confused deputy, privilege escalation. No shell, no filesystem, no network. *Is this class modelled at all?* |
+| Semantics | `authz-001/002/003`, `authz-004-js` | Broken object-level access, confused deputy, privilege escalation, and the JavaScript twin of the first. No shell, no filesystem, no network. *Is this class modelled at all?* |
+
+### 2.2.1 Language coverage is a dimension, not a detail
+
+Four of the classes carry a JavaScript twin of the Python case, because a result measured in
+one language invites the obvious objection that it is an artifact of that language. It also
+exposed a real property: mcp-watch returns a clean zero on Python and finds things in
+JavaScript, which is absent coverage rather than a detection failure and has to be scored as
+such (§4.1). SSRF remains Python-only, which is a gap.
 
 ### 2.3 Why three authorization variants
 
@@ -139,7 +147,7 @@ smear.
 
 The cost of this rule is that a tool can look good by covering little. `pairs_scored` is
 therefore reported alongside every score: two-for-two on a two-pair surface is not the same
-achievement as eleven-for-eleven.
+achievement as thirteen-for-thirteen.
 
 ### 4.2 Counting
 
@@ -159,7 +167,7 @@ in that adapter's docstring.
 **A pair is discriminated only when the vulnerable twin is flagged and the safe twin is not.**
 
 This is the headline metric because precision and recall hide the failure this benchmark
-exists to expose. MCTS scores 82% recall and discriminates 1 of 11 pairs: it flags twin and
+exists to expose. MCTS scores 69% recall and discriminates 1 of 13 pairs: it flags twin and
 twin alike, so nearly every true positive is a coincidence — something present in both files,
 with the label happening to match.
 
@@ -209,13 +217,14 @@ corpus would be stronger and does not exist yet.
 tools detect. A tool author who believes a case is unfair should be able to demonstrate it
 from the repository, which is why proofs and raw findings are kept.
 
-**Small n.** Eleven pairs. Class-level claims rest on two or three variants, which is enough to
+**Small n.** Thirteen pairs. Class-level claims rest on two or three variants, which is enough to
 avoid the n=1 anecdote and not enough for a confidence interval.
 
 **Severity filters are judgement.** The MCTS critical/high filter is defensible and is still a
 choice made by the benchmark author, which shifts that tool's numbers.
 
-**Version drift.** Every result is a snapshot. Mcpwn's crash is at `6e9e8fc`; ramparts'
+**Version drift.** Every result is a snapshot, though not every finding is version-bound:
+Mcpwn's crash traces to its initial commit and reproduces at `v1.0.0`. ramparts'
 missing rules are as of the crate published at the time of the run. Any of this can be fixed
 upstream tomorrow, which is the intended outcome.
 

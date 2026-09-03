@@ -1,0 +1,31 @@
+id: authz-004-js
+language: javascript
+verdict: vulnerable
+class: authz-session
+title: Broken object-level authorization — caller names the user (JavaScript)
+
+sink:
+  file: server.js
+  line: 26
+  function: REPORTS
+  argument: user
+
+surfaces: [source, runtime]
+
+entry:
+  tool: get_report
+  parameter: user
+  reachable: true
+
+proof:
+  tool: get_report
+  args:
+    user: dana
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: authz-004-js-safe
+notes: >
+  The JavaScript twin of authz-001, so the authorization class is not a Python-only
+  result. No shell, no filesystem, no network — the tool reads whichever record the
+  caller names.

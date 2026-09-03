@@ -1,0 +1,26 @@
+id: authz-004-js-safe
+language: javascript
+verdict: safe
+class: null
+title: Same signature, authorization from the session rather than the argument (JavaScript)
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: get_report
+  parameter: user
+  reachable: false
+
+proof:
+  tool: get_report
+  args:
+    user: dana
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: authz-004-js
+notes: >
+  The user argument stays in the schema and is refused when it disagrees with the
+  session identity, so the two servers are indistinguishable from tool metadata.

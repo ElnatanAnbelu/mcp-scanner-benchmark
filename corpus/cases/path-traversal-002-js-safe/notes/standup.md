@@ -1,0 +1,2 @@
+# Standup
+- shipped the corpus

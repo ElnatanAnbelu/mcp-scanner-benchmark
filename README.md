@@ -7,7 +7,7 @@ Twelve-plus MCP scanners exist. Nobody can say which one works.
 
 ## Status
 
-Corpus v0: **22 cases across 11 pairs**, every label executed and verified. Harness running
+Corpus v0: **26 cases across 13 pairs**, every label executed and verified. Harness running
 against **five scanners** — see [First results](#first-results) for what it measured, and
 [METHODOLOGY.md](METHODOLOGY.md) for how, and for where it can be wrong.
 
@@ -22,6 +22,10 @@ against **five scanners** — see [First results](#first-results) for what it me
 | `authz-001` | authz-session | Broken object-level access: caller names whose record to read |
 | `authz-002` | authz-session | Confused deputy: caller names the tenant |
 | `authz-003` | authz-session | Privilege escalation: caller states its own role |
+| `authz-004-js` | authz-session | The JavaScript twin of `authz-001` |
+| `cmd-injection-002-js` | CWE-78 | The JavaScript twin of `cmd-injection-001` |
+| `path-traversal-002-js` | CWE-22 | The JavaScript twin of `path-traversal-001` |
+| `tool-poisoning-002-js` | tool-poisoning | The JavaScript twin of `tool-poisoning-001` |
 
 Full design rationale, scoring rules and threats to validity:
 **[METHODOLOGY.md](METHODOLOGY.md)**.
@@ -47,7 +51,7 @@ ok    authz-001-safe
 ...
 ok    unreachable-sink-001-reachable
 
-22/22 cases verified, 315 checks
+26/26 cases verified, 373 checks
 ```
 
 A proof also has to be honest about *why* it passed. A tool that echoes its input back would
@@ -60,15 +64,15 @@ resolving both ways) and rejects contradictory labels — a `vulnerable` case wi
 
 ## First results
 
-Five scanners, 22 cases. Every number below is reproducible with `python3 harness/run.py`,
+Five scanners, 26 cases. Every number below is reproducible with `python3 harness/run.py`,
 and every claim names the version it was measured against.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | **Pairs discriminated** |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|-------------------------|
 | `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
 | `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
-| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 9 | 8 | 3 | 2 | 53% | 82% | **1/11** |
-| `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 0 | 0 | 2 | 2 | n/a | 0% | **0/2** |
+| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 9 | 8 | 5 | 4 | 53% | 69% | **1/13** |
+| `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | **0/4** |
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | — | — | — | — | — | — | crashes on every case |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | — | — | — | — | — | — | — | unavailable (paid key) |
 
@@ -78,8 +82,8 @@ so any row here can be audited back to what the tool actually said.
 
 ### Pair discrimination is the number that matters
 
-Raw recall hides the result. MCTS reports a respectable **82% recall** — and discriminates
-**one of eleven pairs**. It flags the vulnerable case and its safe twin identically almost
+Raw recall hides the result. MCTS reports **69% recall** — and discriminates **one of
+thirteen pairs**. It flags the vulnerable case and its safe twin identically almost
 every time, so nearly every "true positive" is a coincidence: it flagged something present in
 both files and the label happened to match.
 
@@ -95,6 +99,12 @@ at all. It misses path traversal in both twins.
 Both metadata scanners, by contrast, discriminate every pair they are scored on — including
 the decoys stuffed with audit/compliance/credential vocabulary. That is a real pass on cases
 built to catch keyword matchers.
+
+**The result is not a Python artifact.** Command injection, path traversal, tool poisoning and
+authorization each carry a JavaScript twin of the Python case. MCTS fails the JS twins the same
+way it fails the Python ones — `authz-004-js` and `path-traversal-002-js` are among the pairs it
+cannot tell apart — and mcp-watch, which reads JS/TS only, discriminates none of the four pairs
+it can see at all. Whatever these tools are missing, they miss it in both languages.
 
 The findings that only a benchmark surfaces:
 
@@ -117,10 +127,14 @@ The findings that only a benchmark surfaces:
    its `behavioural` mode is listed and unscored rather than quietly omitted.
 5. **The runtime surface is unmeasured, because the only tool covering it is broken.** Mcpwn
    is the sole surveyed scanner that drives a live server and confirms findings by semantic
-   oracle — and at HEAD (`6e9e8fc`) it crashes before reaching any of that:
-   `tests/state_desync.py:63` calls `self.pentester.send_notification(...)`, which is defined
-   nowhere in the repository. The desync test runs unconditionally ahead of everything else,
-   so `--quick` and `--rce-only` crash too. All 17 runtime cases error identically. The crash
+   oracle — and it crashes before reaching any of that. `tests/state_desync.py:63` calls
+   `self.pentester.send_notification(...)`, which is defined nowhere in the repository, and
+   the desync test runs unconditionally ahead of everything else, so `--quick` and
+   `--rce-only` crash too. All 17 runtime cases error identically.
+
+   This is not a regression at HEAD. The call was introduced in the initial commit and is
+   the only commit in the repository's history that touches it, so every commit and the
+   `v1.0.0` tag carry it; running `v1.0.0` reproduces the same `AttributeError`. The crash
    is recorded as an error, never as a miss: a tool that cannot run is a different result from
    a tool that runs and finds nothing.
 

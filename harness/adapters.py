@@ -388,10 +388,11 @@ class Mcpwn(Adapter):
     semantic oracle (uid=, root:x:, private-key headers, timing deviation, DNS callback).
     It is the only tool surveyed that tests the runtime surface at all.
 
-    At HEAD (6e9e8fc) it crashes before reaching any of that: tests/state_desync.py line
-    63 calls `self.pentester.send_notification(...)`, which is defined nowhere in the
-    repository, and the desync test runs unconditionally ahead of everything else — so
-    `--quick` and `--rce-only` crash too. The scan is still attempted per case and the
+    It crashes before reaching any of that: tests/state_desync.py line 63 calls
+    `self.pentester.send_notification(...)`, which is defined nowhere in the repository,
+    and the desync test runs unconditionally ahead of everything else — so `--quick` and
+    `--rce-only` crash too. Not a regression: the call arrived in the initial commit and no
+    commit since has touched it, so v1.0.0 fails identically. The scan is still attempted per case and the
     crash recorded as an error rather than a miss, because a tool that cannot run is a
     different result from a tool that runs and finds nothing.
     """
