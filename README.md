@@ -8,15 +8,10 @@
 A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
 scanners over them and scores the answers.
 
-The headline result, from four scanners over 26 cases:
+![Results: mcp-watch told apart 0 of 4 pairs, mcts 1 of 13, ramparts and cisco-mcp-scanner 2 of 2 each on metadata only, and mcpwn crashes on every case.](docs/social-preview.png)
 
-| Adapter | Recall | Pairs it could tell apart |
-|---------|--------|---------------------------|
-| `mcts/scan` | 69% | **1 of 13** |
-| `mcp-watch/scan-local` | 25% | **0 of 4** |
-| `ramparts/scan-config` | 100% | 2 of 2 (metadata only) |
-| `cisco-mcp-scanner/stdio+yara` | 100% | 2 of 2 (metadata only) |
-| `mcpwn/live` | | crashes on every case |
+The table above is generated from `harness/results-latest.json` by
+`tools/make_social_preview.py`, so it cannot drift away from what the harness measured.
 
 Every case has a safe twin: nearly the same file, with the vulnerability fixed. A scanner that
 gives both the same verdict has not detected anything, and recall will not tell you that
