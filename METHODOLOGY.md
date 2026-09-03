@@ -1,10 +1,25 @@
 # Methodology
 
-How this benchmark is built, how it scores, and where it can be wrong.
+How this is built, how it scores, and where it can be wrong.
 
-The audience is someone deciding whether to trust the numbers — including the author of a
-tool that scores badly. Every design decision below has a reason, and the ones that could
-bias a result are named as such.
+Written for someone deciding whether to trust the numbers, including the author of a tool that
+scored badly here. Decisions that could bias a result are called out as such.
+
+**What this is not.** It is not a survey of the field. Four tools are measured; several others
+exist and are not here. It is not a verdict on any tool's overall quality, and the sample is
+small enough that no result should be read as a confidence interval.
+
+---
+
+## 0. Prior work
+
+[MCPTox-Benchmark][mcptox] is the closest thing to this and predates it, scoped to tool
+poisoning. pipelock ships `agent-egress-bench`, which benchmarks egress behaviour rather than
+scanners. Neither compares general-purpose MCP scanners against shared ground truth, which is
+the gap this fills — but "no comparison exists" would be too strong a claim and is not made
+here.
+
+[mcptox]: https://github.com/zhiqiangwang4/MCPTox-Benchmark
 
 ---
 

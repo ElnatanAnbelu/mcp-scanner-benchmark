@@ -318,8 +318,8 @@ class Ramparts(Adapter):
 class Mcts(Adapter):
     """MCP-Audit/MCTS — local-first source scanner with behavioural taint analysis.
 
-    The only working source-surface scanner found that reads Python, which makes it the
-    one tool able to reach most of this corpus.
+    Of the tools installed here, the only source-surface scanner that reads Python, which
+    makes it the one able to reach most of this corpus. Others exist that were not tried.
 
     Target the entrypoint file, not the case directory: pointed at a directory it
     returns a single generic "Stdio MCP server trust boundary" note and nothing else,
@@ -386,7 +386,7 @@ class Mcpwn(Adapter):
 
     Zero-dependency Python that drives a real server, injects payloads and confirms by
     semantic oracle (uid=, root:x:, private-key headers, timing deviation, DNS callback).
-    It is the only tool surveyed that tests the runtime surface at all.
+    Of the tools tried here it is the only one that tests the runtime surface at all.
 
     It crashes before reaching any of that: tests/state_desync.py line 63 calls
     `self.pentester.send_notification(...)`, which is defined nowhere in the repository,

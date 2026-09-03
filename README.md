@@ -1,15 +1,23 @@
 # MCP Scanner Benchmark
 
-A labeled corpus of MCP servers and a harness that scores every public MCP security scanner
-against the same ground truth.
+A labeled corpus of MCP servers, and a harness that runs security scanners against it and
+scores them.
 
-Twelve-plus MCP scanners exist. Nobody can say which one works.
+A lot of MCP security scanners have shipped in the last year. There is very little published
+comparison between them, so it is hard to tell which ones actually work. This measures four of
+them against cases where the right answer is known.
+
+**Scope:** four tools, 26 cases. Not the whole field — NVIDIA's SkillSpector, Tencent's
+AI-Infra-Guard, Snyk's agent-scan, Proximity and pipelock are not covered here. Adding a
+scanner is a small pull request, and the ones missing are missing because of install cost or
+account requirements, not because of what they scored.
 
 ## Status
 
-Corpus v0: **26 cases across 13 pairs**, every label executed and verified. Harness running
-against **five scanners** — see [First results](#first-results) for what it measured, and
-[METHODOLOGY.md](METHODOLOGY.md) for how, and for where it can be wrong.
+**26 cases across 13 pairs**, every label executed and verified. Six adapters covering four
+tools; four adapters ran, one is broken upstream and one needs a paid API key. See
+[First results](#first-results) for what came out, and [METHODOLOGY.md](METHODOLOGY.md) for how
+it scores and where it can be wrong.
 
 | Pair | Class | Tests |
 |------|-------|-------|
@@ -32,10 +40,16 @@ Full design rationale, scoring rules and threats to validity:
 
 ## Why a benchmark and not another scanner
 
-The detection lane is taken — VIPER-MCP released working exploit-confirmation tooling, Docker
-acquired MCP Defender, Snyk acquired Invariant's mcp-scan, and NVIDIA, Tencent and Cisco all
-ship scanners. What nobody has built is the measurement: no independent, reproducible
-comparison exists, so every tool's claims stand unchecked.
+Detection is well covered. VIPER-MCP published working exploit-confirmation tooling, Docker
+acquired MCP Defender, Snyk acquired Invariant Labs' mcp-scan, and NVIDIA, Tencent and Cisco
+all ship scanners. A thirteenth scanner is not what the space is short of.
+
+Measurement is thinner. There is prior work — [MCPTox-Benchmark][mcptox] covers tool poisoning,
+and pipelock's `agent-egress-bench` benchmarks egress specifically — but neither compares
+general-purpose MCP scanners against each other, and no cross-tool comparison was found while
+building this. That gap is what this is for.
+
+[mcptox]: https://github.com/zhiqiangwang4/MCPTox-Benchmark
 
 ## Ground truth is executed, not asserted
 
@@ -64,8 +78,8 @@ resolving both ways) and rejects contradictory labels — a `vulnerable` case wi
 
 ## First results
 
-Five scanners, 26 cases. Every number below is reproducible with `python3 harness/run.py`,
-and every claim names the version it was measured against.
+Six adapters over four tools, 26 cases. Every number is reproducible with
+`python3 harness/run.py`, and names the version it was measured against.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | **Pairs discriminated** |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|-------------------------|
@@ -96,9 +110,14 @@ sink no exposed tool can reach, and the same 4 on the twin where it is reachable
 `Handler egress to HTTP client: get_report` on `authz-001`, a file containing no network code
 at all. It misses path traversal in both twins.
 
-Both metadata scanners, by contrast, discriminate every pair they are scored on — including
-the decoys stuffed with audit/compliance/credential vocabulary. That is a real pass on cases
-built to catch keyword matchers.
+Both metadata scanners discriminate every pair they are scored on, including the decoys
+stuffed with audit/compliance/credential vocabulary. That is a real pass on cases built to
+catch keyword matchers.
+
+It is also two pairs each. They read live tool metadata, so the tool-poisoning pairs are the
+only ones in this corpus they can see at all; the other eleven are skipped. 2/2 is not
+comparable to 1/13 — one is a narrow surface cleanly handled, the other is broad coverage that
+mostly fails to discriminate.
 
 **The result is not a Python artifact.** Command injection, path traversal, tool poisoning and
 authorization each carry a JavaScript twin of the Python case. MCTS fails the JS twins the same
@@ -125,9 +144,9 @@ The findings that only a benchmark surfaces:
    with* an exec sink, not by either alone.
 4. **Cisco's source-level analysis needs a paid LLM key.** Offline it sees metadata only, so
    its `behavioural` mode is listed and unscored rather than quietly omitted.
-5. **The runtime surface is unmeasured, because the only tool covering it is broken.** Mcpwn
-   is the sole surveyed scanner that drives a live server and confirms findings by semantic
-   oracle — and it crashes before reaching any of that. `tests/state_desync.py:63` calls
+5. **The runtime surface went unmeasured, because the tool covering it is broken.** Of the
+   tools tried here, Mcpwn is the only one that drives a live server and confirms findings by
+   semantic oracle — and it crashes before reaching any of that. `tests/state_desync.py:63` calls
    `self.pentester.send_notification(...)`, which is defined nowhere in the repository, and
    the desync test runs unconditionally ahead of everything else, so `--quick` and
    `--rce-only` crash too. All 17 runtime cases error identically.
@@ -190,8 +209,8 @@ counted as misses. Getting this wrong is how a benchmark earns a justified taked
 tools it ranks.
 
 Availability is part of the result. Cisco's source-level analysis needs an LLM API key, so it
-is listed and unavailable — a capability nobody can reproduce without paid credentials is worth
-recording as a property of the tool.
+is listed and unavailable. A capability that needs paid credentials is worth recording as a
+property of the tool rather than quietly leaving out.
 
 ## Cases come in pairs
 
