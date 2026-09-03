@@ -23,6 +23,6 @@ proof:
 pair: authz-001
 notes: >
   The `user` argument is still in the signature and still in the schema a client
-  sees — it is simply refused when it disagrees with the session identity. The two
+  sees, it is simply refused when it disagrees with the session identity. The two
   servers are indistinguishable from tool metadata alone, so this pair also tests
   whether a scanner reasons about the handler body or only about the interface.

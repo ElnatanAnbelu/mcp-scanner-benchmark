@@ -1,6 +1,6 @@
 """Team notes MCP server.
 
-Corpus case path-traversal-001-safe — SAFE. See truth.yaml.
+Corpus case path-traversal-001-safe, SAFE. See truth.yaml.
 
 Same shape as path-traversal-001: same tool names, same docstrings, same open()
 sink on a joined path. Only the containment check differs.

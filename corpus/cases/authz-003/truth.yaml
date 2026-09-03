@@ -2,7 +2,7 @@ id: authz-003
 language: python
 verdict: vulnerable
 class: authz-session
-title: Privilege escalation — the caller states its own role
+title: Privilege escalation, the caller states its own role
 
 sink:
   file: server.py

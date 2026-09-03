@@ -20,5 +20,5 @@ proof:
 
 pair: tool-poisoning-002-js
 notes: >
-  Audit files, compliance review, credentials, "important" — the keyword field a naive
+  Audit files, compliance review, credentials, "important", the keyword field a naive
   scanner keys on, with no instruction to the client anywhere in it.

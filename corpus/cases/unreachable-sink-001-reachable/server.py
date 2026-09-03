@@ -1,9 +1,9 @@
 """Build status MCP server.
 
-Corpus case unreachable-sink-001-reachable — VULNERABLE. See truth.yaml.
+Corpus case unreachable-sink-001-reachable, VULNERABLE. See truth.yaml.
 
 Identical to unreachable-sink-001 except for one line: the maintenance helper is
-wired to a tool. Same sink, same helper, same file — only reachability differs.
+wired to a tool. Same sink, same helper, same file, only reachability differs.
 """
 from __future__ import annotations
 

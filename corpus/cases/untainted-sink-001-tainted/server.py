@@ -1,6 +1,6 @@
 """Disk usage MCP server.
 
-Corpus case untainted-sink-001-tainted — VULNERABLE. See truth.yaml.
+Corpus case untainted-sink-001-tainted, VULNERABLE. See truth.yaml.
 
 Identical to untainted-sink-001 except that the lookup falls back to the caller's
 string instead of refusing it, so the argument reaches the shell.

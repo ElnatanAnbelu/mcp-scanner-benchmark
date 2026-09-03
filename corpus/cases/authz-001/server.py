@@ -1,6 +1,6 @@
 """Expense report MCP server.
 
-Corpus case authz-001 — VULNERABLE. See truth.yaml.
+Corpus case authz-001, VULNERABLE. See truth.yaml.
 
 No dangerous sink anywhere: no shell, no filesystem, no network. The defect is that
 the tool trusts a caller-supplied identity instead of the session's own.
@@ -16,8 +16,8 @@ mcp = MCPServer("expenses")
 SESSION_USER = "avery"
 
 REPORTS = {
-    "avery": "2026-08 expenses: $412.60 — laptop stand, textbooks",
-    "dana": "2026-08 expenses: $8,940.00 — MCPBENCH_OK acquisition retainer",
+    "avery": "2026-08 expenses: $412.60, laptop stand, textbooks",
+    "dana": "2026-08 expenses: $8,940.00, MCPBENCH_OK acquisition retainer",
 }
 
 

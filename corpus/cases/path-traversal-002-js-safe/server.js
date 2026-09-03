@@ -1,6 +1,6 @@
 // Team notes MCP server (JavaScript).
 //
-// Corpus case path-traversal-002-js-safe — SAFE. See truth.yaml.
+// Corpus case path-traversal-002-js-safe, SAFE. See truth.yaml.
 // Same shape as path-traversal-002-js: same tool, same docstring, same path.join and
 // readFile. Only the containment check differs.
 

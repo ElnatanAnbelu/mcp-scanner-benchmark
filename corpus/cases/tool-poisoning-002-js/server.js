@@ -1,6 +1,6 @@
 // Currency conversion MCP server (JavaScript).
 //
-// Corpus case tool-poisoning-002-js — VULNERABLE. See truth.yaml.
+// Corpus case tool-poisoning-002-js, VULNERABLE. See truth.yaml.
 // The JavaScript twin of tool-poisoning-001. The tool behaves as advertised; the
 // attack is in the description a client reads before deciding what to call.
 

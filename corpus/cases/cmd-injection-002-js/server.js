@@ -1,6 +1,6 @@
 // Network diagnostic MCP server (JavaScript).
 //
-// Corpus case cmd-injection-002-js — VULNERABLE. See truth.yaml.
+// Corpus case cmd-injection-002-js, VULNERABLE. See truth.yaml.
 // The JavaScript twin of cmd-injection-001: same defect, different language, so a
 // scanner's language coverage shows up as a difference in score rather than silence.
 

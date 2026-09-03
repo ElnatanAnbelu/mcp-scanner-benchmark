@@ -1,6 +1,6 @@
 // Expense report MCP server (JavaScript).
 //
-// Corpus case authz-004-js — VULNERABLE. See truth.yaml.
+// Corpus case authz-004-js, VULNERABLE. See truth.yaml.
 // The JavaScript twin of authz-001: no dangerous sink anywhere, just a tool that trusts
 // a caller-supplied identity instead of the session's own.
 
@@ -14,8 +14,8 @@ const server = new McpServer({ name: "expenses", version: "1.0.0" });
 const SESSION_USER = "avery";
 
 const REPORTS = {
-  avery: "2026-08 expenses: $412.60 — laptop stand, textbooks",
-  dana: "2026-08 expenses: $8,940.00 — MCPBENCH_OK acquisition retainer",
+  avery: "2026-08 expenses: $412.60, laptop stand, textbooks",
+  dana: "2026-08 expenses: $8,940.00, MCPBENCH_OK acquisition retainer",
 };
 
 server.tool(

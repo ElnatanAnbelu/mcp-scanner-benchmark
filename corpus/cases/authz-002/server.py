@@ -1,6 +1,6 @@
 """Support ticket MCP server.
 
-Corpus case authz-002 — VULNERABLE. See truth.yaml.
+Corpus case authz-002, VULNERABLE. See truth.yaml.
 
 Confused deputy: the server holds privileged credentials and acts on a caller-supplied
 tenant id without checking it against the session. No dangerous sink anywhere.

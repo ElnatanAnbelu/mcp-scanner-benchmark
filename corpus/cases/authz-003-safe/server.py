@@ -1,8 +1,8 @@
 """Admin console MCP server.
 
-Corpus case authz-003-safe — SAFE. See truth.yaml.
+Corpus case authz-003-safe, SAFE. See truth.yaml.
 
-Same tool, same `role` argument in the schema, same privilege check — evaluated against
+Same tool, same `role` argument in the schema, same privilege check, evaluated against
 the session's role rather than the one the caller states.
 """
 from __future__ import annotations

@@ -5,7 +5,7 @@ Every case is a directory under `corpus/cases/<case-id>/` holding the server sou
 
 ## Why negative cases exist
 
-A corpus of only vulnerable servers measures **recall** and nothing else — a scanner that flags
+A corpus of only vulnerable servers measures **recall** and nothing else. A scanner that flags
 every line scores 100%. Precision needs servers that are *safe but look dangerous*: the same
 sink reached through a validated path, an `exec` on a hardcoded constant, a traversal-shaped
 join that resolves inside a jail. Those are the cases that separate a real scanner from a
@@ -45,15 +45,15 @@ notes: >
 
 `corpus/verify.py` executes every label. Two modes:
 
-- **`mode: call`** (default) — invoke `tool` with `args` and search the result for `oracle`.
-- **`mode: metadata`** — list the tools and search their names, descriptions and schemas.
+- **`mode: call`** (default), invoke `tool` with `args` and search the result for `oracle`.
+- **`mode: metadata`**, list the tools and search their names, descriptions and schemas.
   Tool poisoning hides in what a client reads before calling anything, so behaviour-based
   proof cannot see it.
 
 Two rules make a proof mean something:
 
 **The oracle must not appear in the payload.** A tool that echoes its input back produces the
-marker without executing anything — `unreachable-sink-001` did exactly that and passed for the
+marker without executing anything, `unreachable-sink-001` did exactly that and passed for the
 wrong reason until it was caught. Shell payloads therefore split the marker:
 
 ```yaml
@@ -73,7 +73,7 @@ directory. Nothing in a proof may touch anything outside it.
 - **`verdict`** is the scored label. `vulnerable` means an attacker controlling the tool
   argument can reach the sink and cause the class's effect. `safe` means they cannot.
 - **`reachable: false`** marks a dangerous-looking sink with no path from any exposed tool.
-  Flagging it is a false positive — this is the single most common scanner failure and worth
+  Flagging it is a false positive. This is the single most common scanner failure and worth
   testing explicitly.
 - **`sink.line`** must point at the executing line, not the import or the wrapper.
 - **`pair`** is required on every case. Unpaired cases skew the score.
@@ -82,7 +82,7 @@ directory. Nothing in a proof may touch anything outside it.
 
 | Class | What it is | Field coverage |
 |-------|-----------|----------------|
-| CWE-78 | Command injection | Well covered — every scanner claims it |
+| CWE-78 | Command injection | Well covered. Every scanner claims it |
 | CWE-22 | Path traversal | Well covered |
 | CWE-918 | SSRF | Well covered |
 | tool-poisoning | Malicious instructions in tool descriptions | Well covered |

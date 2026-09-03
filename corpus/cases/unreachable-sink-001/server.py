@@ -1,6 +1,6 @@
 """Build status MCP server.
 
-Corpus case unreachable-sink-001 — SAFE. See truth.yaml.
+Corpus case unreachable-sink-001, SAFE. See truth.yaml.
 
 Contains a genuinely dangerous sink (subprocess with shell=True, interpolating its
 argument) that no exposed tool can reach. This is the case that separates reachability
@@ -20,7 +20,7 @@ RECENT = {"main": "passing", "release": "passing", "next": "failing"}
 def _run_maintenance(command: str) -> str:
     """Operator-only helper. Kept for the migration runbook; wired to nothing.
 
-    Dangerous by construction — but it is not registered as a tool, not called from
+    Dangerous by construction, but it is not registered as a tool, not called from
     any tool, and not reachable over MCP at all.
     """
     return subprocess.run(command, shell=True, capture_output=True, text=True).stdout

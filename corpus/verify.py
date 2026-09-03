@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify every corpus label by executing it.
 
-A benchmark whose ground truth is asserted rather than demonstrated is worth nothing —
+A benchmark whose ground truth is asserted rather than demonstrated is worth nothing , 
 the first reviewer to find a mislabeled case discards the whole leaderboard. So every
 case carries a `proof` block, and this runs it:
 
@@ -13,7 +13,7 @@ resolving in both directions, and the field combinations that are contradictory
 (a vulnerable case with no sink, a safe case with a class).
 
 Cases run in-process against the FastMCP tool functions. Payloads stay local and
-inert — an echo of a marker string, never a real attack.
+inert, an echo of a marker string, never a real attack.
 
 Usage:  python3 corpus/verify.py [case-id ...]
 Exit:   0 all verified, 1 something failed.
@@ -119,7 +119,7 @@ def run_js_proof(case_dir: Path, tool: str, args: dict[str, Any]) -> tuple[str, 
     """Drive a JavaScript case over stdio. Returns (stdout, error).
 
     A JS server cannot be imported into Python, so its proof runs through a real MCP
-    client — the same transport an attacker would use, which makes it the stronger
+    client, the same transport an attacker would use, which makes it the stronger
     proof of the two paths rather than a concession.
     """
     server = case_dir / "server.js"
@@ -203,7 +203,7 @@ def _flatten(value: Any):
 def prove(truth: dict[str, Any], case_dir: Path, r: Result) -> None:
     proof = truth.get("proof")
     if not proof:
-        r.errors.append("no proof block — every label must be demonstrated, not asserted")
+        r.errors.append("no proof block, every label must be demonstrated, not asserted")
         r.checks += 1
         return
 
@@ -223,7 +223,7 @@ def prove(truth: dict[str, Any], case_dir: Path, r: Result) -> None:
         for key, value in (proof.get("args") or {}).items():
             if oracle in str(value):
                 r.errors.append(
-                    f"proof.args[{key}] contains the oracle {oracle!r} literally — "
+                    f"proof.args[{key}] contains the oracle {oracle!r} literally, "
                     "reflected input would pass without executing anything"
                 )
         r.checks += 1

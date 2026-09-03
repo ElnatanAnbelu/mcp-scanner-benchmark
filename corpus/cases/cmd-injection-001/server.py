@@ -1,6 +1,6 @@
 """Network diagnostic MCP server.
 
-Corpus case cmd-injection-001 — VULNERABLE. See truth.yaml.
+Corpus case cmd-injection-001, VULNERABLE. See truth.yaml.
 """
 from __future__ import annotations
 

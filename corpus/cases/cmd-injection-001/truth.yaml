@@ -29,5 +29,5 @@ notes: >
   `target` is interpolated into a shell string and run with shell=True, so
   "example.com; id" executes both. The second tool in the same file
   (resolve_host) uses a list argv on the same subprocess.run sink and is not
-  exploitable — a scanner that reports the file rather than the tool cannot
+  exploitable, a scanner that reports the file rather than the tool cannot
   tell them apart, which is itself worth measuring.

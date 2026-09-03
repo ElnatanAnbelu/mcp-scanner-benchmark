@@ -77,7 +77,7 @@ def score(adapter: adapters.Adapter, cases: list[dict]) -> dict:
     # Pair discrimination: the metric raw counts hide.
     #
     # A scanner that flags both twins of a pair scores a true positive on the vulnerable
-    # one — but it did not detect the vulnerability, it flagged something present in both
+    # one, but it did not detect the vulnerability, it flagged something present in both
     # and got the label right by accident. MCTS flags authz-001 and authz-001-safe
     # identically, so its "tp" there says nothing about authorization at all.
     #
@@ -118,6 +118,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("cases", nargs="*")
     ap.add_argument("--adapter", help="run only adapters whose name contains this")
     ap.add_argument("--json", type=Path, help="write the full result to this file")
+    ap.add_argument("--force", action="store_true",
+                    help="overwrite a results file even when this run scored fewer adapters")
     ns = ap.parse_args(argv)
 
     cases = load_cases(ns.cases)
@@ -132,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for adapter in selected:
         if not adapter.available():
-            print(f"— {adapter.name}: unavailable, needs {adapter.requires}")
+            print(f"  --  {adapter.name}: unavailable, needs {adapter.requires}")
             report["adapters"].append({"adapter": adapter.name,
                                        "version": adapter.resolve_version(),
                                        "unavailable": adapter.requires})
@@ -160,6 +162,22 @@ def main(argv: list[str] | None = None) -> int:
                   + (f"   cannot tell apart: {', '.join(failed)}" if failed else ""))
 
     if ns.json:
+        # A run with scanners missing produces a thinner report than the one on disk.
+        # Writing it anyway silently replaces published results with a partial run, which
+        # is how a wrong number gets shipped. Refuse unless asked twice.
+        scored = sum(1 for a in report["adapters"] if a.get("counts"))
+        existing = 0
+        if ns.json.is_file():
+            try:
+                prior = json.loads(ns.json.read_text(encoding="utf-8"))
+                existing = sum(1 for a in prior.get("adapters", []) if a.get("counts"))
+            except (OSError, json.JSONDecodeError):
+                existing = 0
+        if existing > scored and not ns.force:
+            print(f"\nrefusing to overwrite {ns.json}: it holds {existing} scored adapters and "
+                  f"this run scored {scored}. Install the missing scanners, or pass --force.",
+                  file=sys.stderr)
+            return 1
         ns.json.write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"\nwrote {ns.json}")
     return 0

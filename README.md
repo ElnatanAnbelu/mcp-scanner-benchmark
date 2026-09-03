@@ -5,243 +5,259 @@
 [![cases](https://img.shields.io/badge/corpus-26%20cases%20%2F%2013%20pairs-informational)](corpus/cases)
 [![ground truth](https://img.shields.io/badge/ground%20truth-executed-success)](corpus/verify.py)
 
-A labeled corpus of MCP servers, and a harness that runs security scanners against it and
-scores them.
+A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
+scanners over them and scores the answers.
 
-A lot of MCP security scanners have shipped in the last year. There is very little published
-comparison between them, so it is hard to tell which ones actually work. This measures four of
-them against cases where the right answer is known.
+Plenty of MCP security scanners shipped over the past year. Almost nobody has compared them, so
+if you want to pick one you are going by README claims. This measures four of them against
+cases with known answers.
 
-**Scope:** four tools, 26 cases. Not the whole field — NVIDIA's SkillSpector, Tencent's
-AI-Infra-Guard, Snyk's agent-scan, Proximity and pipelock are not covered here. Adding a
-scanner is a small pull request, and the ones missing are missing because of install cost or
-account requirements, not because of what they scored.
+Scope: four tools, 26 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
+agent-scan, Proximity and pipelock are missing, and they are missing because of install cost or
+account requirements, not because of anything they scored. Adding a scanner is a small pull
+request.
 
 ## Status
 
-**26 cases across 13 pairs**, every label executed and verified. Six adapters covering four
-tools; four adapters ran, one is broken upstream and one needs a paid API key. See
-[First results](#first-results) for what came out, and [METHODOLOGY.md](METHODOLOGY.md) for how
-it scores and where it can be wrong.
+26 cases in 13 pairs, every label executed and verified. Six adapters covering four tools. Four
+of them ran: one is broken upstream, one wants a paid API key.
 
-| Pair | Class | Tests |
-|------|-------|-------|
-| `cmd-injection-001` | CWE-78 | Shell interpolation vs. validated list argv |
-| `path-traversal-001` | CWE-22 | Unconstrained join vs. resolved containment |
-| `ssrf-001` | CWE-918 | Any scheme and host vs. allowlist + public-destination check |
-| `tool-poisoning-001` | tool-poisoning | Hidden instructions vs. security vocabulary with no instruction |
+[METHODOLOGY.md](METHODOLOGY.md) covers how the scoring works and where it can be wrong.
+
+| Pair | Class | What it tests |
+|------|-------|---------------|
+| `cmd-injection-001` | CWE-78 | Shell interpolation against a validated list argv |
+| `path-traversal-001` | CWE-22 | Unconstrained join against a resolved containment check |
+| `ssrf-001` | CWE-918 | Any scheme and host against an allowlist plus destination check |
+| `tool-poisoning-001` | tool-poisoning | Hidden instructions against security words with no instruction |
 | `unreachable-sink-001` | CWE-78 | The same dangerous sink, wired to a tool or wired to nothing |
-| `untainted-sink-001` | CWE-78 | A live, reachable shell call — constant argument vs. caller's string |
-| `authz-001` | authz-session | Broken object-level access: caller names whose record to read |
-| `authz-002` | authz-session | Confused deputy: caller names the tenant |
-| `authz-003` | authz-session | Privilege escalation: caller states its own role |
+| `untainted-sink-001` | CWE-78 | A live shell call: constant argument against the caller's string |
+| `authz-001` | authz-session | Broken object-level access. The caller names whose record to read |
+| `authz-002` | authz-session | Confused deputy. The caller names the tenant |
+| `authz-003` | authz-session | Privilege escalation. The caller states its own role |
 | `authz-004-js` | authz-session | The JavaScript twin of `authz-001` |
 | `cmd-injection-002-js` | CWE-78 | The JavaScript twin of `cmd-injection-001` |
 | `path-traversal-002-js` | CWE-22 | The JavaScript twin of `path-traversal-001` |
 | `tool-poisoning-002-js` | tool-poisoning | The JavaScript twin of `tool-poisoning-001` |
 
-Full design rationale, scoring rules and threats to validity:
-**[METHODOLOGY.md](METHODOLOGY.md)**.
+## Why a benchmark instead of another scanner
 
-## Why a benchmark and not another scanner
+Detection is crowded. VIPER-MCP published working exploit-confirmation tooling, Docker acquired
+MCP Defender, Snyk acquired Invariant Labs' mcp-scan, and NVIDIA, Tencent and Cisco all ship
+scanners. A thirteenth scanner is not the thing this space is short of.
 
-Detection is well covered. VIPER-MCP published working exploit-confirmation tooling, Docker
-acquired MCP Defender, Snyk acquired Invariant Labs' mcp-scan, and NVIDIA, Tencent and Cisco
-all ship scanners. A thirteenth scanner is not what the space is short of.
-
-Measurement is thinner. There is prior work — [MCPTox-Benchmark][mcptox] covers tool poisoning,
-and pipelock's `agent-egress-bench` benchmarks egress specifically — but neither compares
-general-purpose MCP scanners against each other, and no cross-tool comparison was found while
-building this. That gap is what this is for.
+Measurement is thinner. Prior work exists: [MCPTox-Benchmark][mcptox] covers tool poisoning, and
+pipelock ships `agent-egress-bench` for egress behaviour. Neither one compares general-purpose
+MCP scanners against each other, and I could not find anything that does. That is the gap this
+fills.
 
 [mcptox]: https://github.com/zhiqiangwang4/MCPTox-Benchmark
 
 ## Ground truth is executed, not asserted
 
-A benchmark whose labels are wrong is worse than no benchmark — the first reviewer to find a
-mislabeled case discards the whole leaderboard. So every case carries a `proof` block, and
-`corpus/verify.py` runs it: a `vulnerable` case must demonstrate its payload firing, and its
-paired `safe` case must demonstrate the same payload failing.
+If a label here is wrong, the whole leaderboard is worthless, and the first reviewer to notice
+gets to say so. So no label is just my say-so. Every case carries a `proof` block and
+`corpus/verify.py` runs it. A vulnerable case has to demonstrate its payload firing. Its safe
+twin has to demonstrate the same payload failing.
 
 ```console
 $ python3 corpus/verify.py
 ok    authz-001
 ok    authz-001-safe
 ...
-ok    unreachable-sink-001-reachable
+ok    untainted-sink-001-tainted
 
 26/26 cases verified, 373 checks
 ```
 
-A proof also has to be honest about *why* it passed. A tool that echoes its input back would
-produce the marker without executing anything, so shell payloads split it — `echo MCPBENCH""_OK`
-reassembles only in a shell — and the verifier rejects any payload containing its own oracle.
+A proof also has to be honest about why it passed, which I learned the hard way. A tool that
+echoes its input back produces the marker string without executing anything, and one of my cases
+passed that way before I caught it. Shell payloads now split the marker, so `echo MCPBENCH""_OK`
+only reassembles inside a shell, and the verifier rejects any payload that contains its own
+oracle.
 
-The verifier also lints the schema (required fields, sink lines pointing at real code, pairs
-resolving both ways) and rejects contradictory labels — a `vulnerable` case with no sink, or a
-`safe` case declaring a CWE class.
+The verifier lints the schema too: required fields, sink lines that actually point at the named
+function, pairs that resolve both ways. It rejects contradictory labels, like a vulnerable case
+with no sink or a safe case declaring a CWE class.
 
-## First results
+## Results
 
-Six adapters over four tools, 26 cases. Every number is reproducible with
-`python3 harness/run.py`, and names the version it was measured against.
+Six adapters over four tools, 26 cases. Reproduce with `python3 harness/run.py`. Every number
+names the version it came from.
 
-| Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | **Pairs discriminated** |
-|---------|---------|---------|-----------|----|----|----|----|-----------|--------|-------------------------|
-| `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
-| `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
-| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 9 | 8 | 5 | 4 | 53% | 69% | **1/13** |
-| `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | **0/4** |
-| `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | — | — | — | — | — | — | crashes on every case |
-| `cisco-mcp-scanner/behavioural` | 4.8.4 | source | — | — | — | — | — | — | — | unavailable (paid key) |
+| Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
+|---------|---------|---------|-----------|----|----|----|----|-----------|--------|---------------------|
+| `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | 2/2 |
+| `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | 2/2 |
+| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 9 | 8 | 5 | 4 | 53% | 69% | 1/13 |
+| `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | 0/4 |
+| `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
+| `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
 
-Run on Darwin 25.6.0 arm64, Python 3.14.5. Versions, platform and timestamp are recorded in
-[`harness/results-latest.json`](harness/results-latest.json) with every scanner's raw output,
-so any row here can be audited back to what the tool actually said.
+Run on Darwin 25.6.0 arm64, Python 3.14.5. Versions, platform and timestamp go into
+[`harness/results-latest.json`](harness/results-latest.json) along with each scanner's raw
+output, so any row above can be traced back to what the tool actually said.
 
-### Pair discrimination is the number that matters
+### Pair discrimination is the number I care about
 
-Raw recall hides the result. MCTS reports **69% recall** — and discriminates **one of
-thirteen pairs**. It flags the vulnerable case and its safe twin identically almost
-every time, so nearly every "true positive" is a coincidence: it flagged something present in
-both files and the label happened to match.
+Recall hides the interesting failure. MCTS reports 69% recall and tells apart one pair out of
+thirteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
+of its true positives are luck: it flagged something that appears in both files, and the label
+happened to line up.
 
-A pair counts as discriminated only when the vulnerable twin is flagged and the safe twin is
-not. That is the only question a user actually has — *can this tool tell a vulnerability from
-its fix?* — and it is invisible in precision/recall alone.
+A pair counts as discriminated only when the vulnerable twin gets flagged and the safe twin does
+not. That is the question I actually have as a user. Can this thing tell a vulnerability from
+its fix? Precision and recall will not answer it.
 
-Concretely, MCTS reports 4 critical/high findings on `unreachable-sink-001`, whose dangerous
-sink no exposed tool can reach, and the same 4 on the twin where it is reachable. It reports
-`Handler egress to HTTP client: get_report` on `authz-001`, a file containing no network code
-at all. It misses path traversal in both twins.
+Some specifics. MCTS reports 4 critical/high findings on `unreachable-sink-001`, where no
+exposed tool can reach the dangerous sink, and the same 4 on the twin where it is reachable. On
+`authz-001` it reports `Handler egress to HTTP client: get_report`, in a file with no network
+code in it. It misses path traversal in both twins.
 
-Both metadata scanners discriminate every pair they are scored on, including the decoys
-stuffed with audit/compliance/credential vocabulary. That is a real pass on cases built to
-catch keyword matchers.
+The two metadata scanners discriminate every pair they are scored on, decoys included. The
+decoys are the safe twins I stuffed with audit and compliance and credential vocabulary to catch
+keyword matching, so that is a real pass.
 
-It is also two pairs each. They read live tool metadata, so the tool-poisoning pairs are the
-only ones in this corpus they can see at all; the other eleven are skipped. 2/2 is not
-comparable to 1/13 — one is a narrow surface cleanly handled, the other is broad coverage that
-mostly fails to discriminate.
+It is also two pairs each, and worth saying plainly. They read live tool metadata, so the
+tool-poisoning pairs are the only ones in this corpus they can see. The other eleven get
+skipped. 2/2 and 1/13 are not the same achievement: one is a narrow surface handled cleanly, the
+other is broad coverage that mostly cannot discriminate.
 
-**The result is not a Python artifact.** Command injection, path traversal, tool poisoning and
-authorization each carry a JavaScript twin of the Python case. MCTS fails the JS twins the same
-way it fails the Python ones — `authz-004-js` and `path-traversal-002-js` are among the pairs it
-cannot tell apart — and mcp-watch, which reads JS/TS only, discriminates none of the four pairs
-it can see at all. Whatever these tools are missing, they miss it in both languages.
+### It is not a Python artifact
 
-The findings that only a benchmark surfaces:
+Command injection, path traversal, tool poisoning and authorization each have a JavaScript twin
+of the Python case, because I expected someone to ask. MCTS fails the JavaScript ones the same
+way it fails the Python ones, with `authz-004-js` and `path-traversal-002-js` both in the list it
+cannot tell apart. mcp-watch reads JS/TS only, gets four pairs it can see, and discriminates none
+of them. Whatever these tools are missing, they miss it in both languages.
 
-1. **`cargo install ramparts` ships no detection.** It warns
-   `No YARA rules directory found. Pattern-based detection is DISABLED for this run`, and the
-   generated `config.yaml` leaves the LLM `api_key` empty — so both engines are off and a
-   default install reports a clean bill of health on a server whose tool description says to
-   read `~/.ssh/id_rsa`. With the rules fetched from the repo it scores 100%. The gap is
-   packaging, not capability, and `tools/setup-ramparts.sh` closes it.
-2. **mcp-watch reads JavaScript and TypeScript only.** The identical poisoned description
-   scores 1 finding as JS and 0 as Python, so roughly half the MCP ecosystem is invisible to
-   it. That is coverage, not detection failure, so Python cases are skipped rather than
-   counted against it.
-3. **mcp-watch misses tool poisoning even in JavaScript** — its own headline category. A
-   description instructing the client to read `~/.ssh/id_rsa` and stay quiet about it returns
-   zero findings. It also misses `child_process.exec` on an interpolated tool argument. The
-   one finding it produced in testing was `toxic-flow`, triggered by a description *combined
-   with* an exec sink, not by either alone.
-4. **Cisco's source-level analysis needs a paid LLM key.** Offline it sees metadata only, so
-   its `behavioural` mode is listed and unscored rather than quietly omitted.
-5. **The runtime surface went unmeasured, because the tool covering it is broken.** Of the
-   tools tried here, Mcpwn is the only one that drives a live server and confirms findings by
-   semantic oracle — and it crashes before reaching any of that. `tests/state_desync.py:63` calls
-   `self.pentester.send_notification(...)`, which is defined nowhere in the repository, and
-   the desync test runs unconditionally ahead of everything else, so `--quick` and
-   `--rce-only` crash too. All 17 runtime cases error identically.
+### What came out of it
 
-   This is not a regression at HEAD. The call was introduced in the initial commit and is
-   the only commit in the repository's history that touches it, so every commit and the
-   `v1.0.0` tag carry it; running `v1.0.0` reproduces the same `AttributeError`. The crash
-   is recorded as an error, never as a miss: a tool that cannot run is a different result from
-   a tool that runs and finds nothing.
+**`cargo install ramparts` ships without detection.** It warns that no YARA rules directory was
+found and that pattern-based detection is disabled for the run, and the config it generates
+leaves the LLM `api_key` empty. Both engines off. A default install gives a clean bill of health
+to a server whose tool description tells the agent to read `~/.ssh/id_rsa`. Fetch the rules from
+the repo and it scores 100%, so this is packaging rather than capability, and
+`tools/setup-ramparts.sh` closes it.
 
-6. **Authorization is detected once out of three variants, and for the wrong reason.** The
-   class is carried by three flavours: broken object-level access (`authz-001`, the caller
-   names whose record to read), confused deputy (`authz-002`, the caller names the tenant),
-   and privilege escalation (`authz-003`, the caller states its own role). MCTS
-   discriminates only `authz-002` — and the findings it reports there are
-   `Handler egress to HTTP client: list_tickets` and `SSRF exfiltration to model context`,
-   on a file containing a dict lookup and a string join and **no network code at all**. It
-   is tracking argument-reaches-output and labelling it SSRF; the discrimination is a side
-   effect, not authorization analysis. On `authz-001` and `authz-003` it produces those same
-   wrong findings on both twins and discriminates neither.
+**mcp-watch reads JavaScript and TypeScript only.** The same poisoned description scores 1
+finding as JS and 0 as Python, which puts roughly half the MCP ecosystem out of its reach. That
+is missing coverage rather than a detection failure, so its Python cases are skipped instead of
+counted against it.
 
-   This is why the class needed three variants. On `authz-001` alone the result reads as a
-   categorical zero, which would have been an overclaim.
-7. **Nor does any scanner reason about reachability or taint.** Two dimensions, both failed.
-   `unreachable-sink-001` and its twin share a byte-identical `subprocess.run(..., shell=True)`
-   helper wired to a tool in one and to nothing in the other. `untainted-sink-001` and its
-   twin both reach a live shell call, but one passes a constant from a lookup table and the
-   other falls back to the caller's string — one word apart. MCTS reports the same 4
-   critical/high findings on both members of both pairs.
-8. **MCTS scans almost nothing when given a directory.** Pointed at a case directory it
-   returns one generic "Stdio MCP server trust boundary" note; pointed at the entrypoint
-   file it returns nine findings including the taint path. A user scanning a repo the
-   obvious way gets a clean bill of health for a server with a critical injection in it.
+**mcp-watch also misses tool poisoning in JavaScript,** which is its headline category. A
+description telling the client to read `~/.ssh/id_rsa` and keep quiet about it returns nothing.
+It misses `child_process.exec` on an interpolated tool argument too. The one finding it produced
+during testing was `toxic-flow`, and that needed a poisoned description together with an exec
+sink, not either on its own.
 
-Taken together, the surface coverage looks like this: **metadata is well served** (two tools
-at 100% with full pair discrimination), **source is measured but undiscriminating** (MCTS at
-0/8 pairs, mcp-watch JS/TS-only at 0/2, one tool behind a paywall), and **runtime is
-effectively uncovered**. That distribution is the argument for the benchmark existing.
+**Cisco's source-level analysis needs a paid LLM key.** Offline it only sees metadata, so its
+`behavioural` mode sits in the table listed and unscored rather than quietly dropped.
 
-## The harness scores by surface
+**The runtime surface went unmeasured, because the tool that covers it is broken.** Of the tools
+I tried, Mcpwn is the only one that drives a live server and confirms findings with a semantic
+oracle. It crashes before it gets there. `tests/state_desync.py:63` calls
+`self.pentester.send_notification(...)`, which is defined nowhere in the repository, and the
+desync test runs unconditionally before everything else, so `--quick` and `--rce-only` crash the
+same way. All 17 runtime cases error identically.
+
+This is not a regression. The call arrived in the repository's initial commit and no commit
+since has touched it, so every commit and the `v1.0.0` tag carry it, and running `v1.0.0`
+reproduces the same `AttributeError`. The crash is recorded as an error and never as a miss. A
+tool that cannot run is a different result from a tool that runs and finds nothing.
+
+**Authorization gets detected once out of three variants, and for the wrong reason.** The class
+has three flavours here: broken object-level access in `authz-001` where the caller names whose
+record to read, confused deputy in `authz-002` where the caller names the tenant, and privilege
+escalation in `authz-003` where the caller states its own role. MCTS discriminates `authz-002`
+only. What it reports there is `Handler egress to HTTP client: list_tickets` and `SSRF
+exfiltration to model context`, on a file holding a dict lookup and a string join with no network
+code anywhere in it. It is tracking argument-reaches-output and calling that SSRF, so the
+discrimination is a side effect rather than authorization analysis. On `authz-001` and
+`authz-003` it produces the same wrong findings on both twins and discriminates neither.
+
+This is why the class needed three variants. On `authz-001` by itself the result reads as a
+categorical zero, and I would have published an overclaim.
+
+**Nothing reasons about reachability or taint either.** `unreachable-sink-001` and its twin share
+a byte-identical `subprocess.run(..., shell=True)` helper, wired to a tool in one and to nothing
+in the other. `untainted-sink-001` and its twin both reach a live shell call, but one passes a
+constant from a lookup table and the other falls back to the caller's string. One word apart.
+MCTS reports the same 4 critical/high findings on both members of both pairs.
+
+**MCTS scans almost nothing if you point it at a directory.** Given a case directory it returns
+one generic "Stdio MCP server trust boundary" note. Given the entrypoint file it returns nine
+findings including the taint path. Scan your repo the obvious way and you get a clean bill of
+health for a server with a critical injection in it.
+
+Put together: metadata is served well, by two tools at 100% with full pair discrimination.
+Source gets measured but not discriminated, with MCTS at 1/13, mcp-watch at 0/4 on JS/TS only,
+and one tool behind a paywall. Runtime is uncovered. That spread is the argument for the
+benchmark existing.
+
+## Scoring by surface
 
 ```console
 $ python3 harness/run.py
 
-cisco-mcp-scanner/stdio+yara  (surfaces: metadata)
+cisco-mcp-scanner/stdio+yara 4.8.4  (surfaces: metadata)
   ✓ tp   tool-poisoning-001                 1 finding(s)
   ✓ tn   tool-poisoning-001-safe
   · skip authz-001                          surfaces ['source', 'runtime'] outside ['metadata']
   ...
-  tp=1 fp=0 tn=1 fn=0 skipped=10 errors=0
+  tp=2 fp=0 tn=2 fn=0 skipped=22 errors=0
   precision 100.0%   recall 100.0%   f1 100.0%
-— cisco-mcp-scanner/behavioural: unavailable, needs MCP_SCANNER_LLM_API_KEY
+  pairs discriminated 2/2
+  --  cisco-mcp-scanner/behavioural: unavailable, needs MCP_SCANNER_LLM_API_KEY
 ```
 
-Every case declares the `surfaces` it lives on — `metadata`, `source`, `runtime` — and every
-adapter declares the surfaces it inspects. **An adapter is scored only where those overlap.**
-Cisco's stdio mode reads live tool metadata; asking it about a source-level command injection
-measures the question, not the scanner, so those cases are reported as `skipped` rather than
-counted as misses. Getting this wrong is how a benchmark earns a justified takedown from the
-tools it ranks.
+Every case declares the surfaces it lives on, which are `metadata`, `source` and `runtime`, and
+every adapter declares the surfaces it inspects. An adapter only gets scored where those
+overlap. Cisco's stdio mode reads live tool metadata, so asking it about a source-level command
+injection would measure my question rather than the scanner, and those cases come back as
+`skipped` instead of counted as misses. Getting this part wrong is how a benchmark earns a
+deserved takedown from the tools it ranks.
 
-Availability is part of the result. Cisco's source-level analysis needs an LLM API key, so it
-is listed and unavailable. A capability that needs paid credentials is worth recording as a
-property of the tool rather than quietly leaving out.
+Availability counts as a result. Cisco's source-level analysis needs an LLM API key, so it is
+listed as unavailable. A capability that only works with paid credentials is a property of the
+tool worth recording, not something to leave out quietly.
 
 ## Cases come in pairs
 
-A corpus of only vulnerable servers measures recall and nothing else: a scanner that flags
-every line scores 100%. Every vulnerable case is paired with a safe twin that shares its
-imports, tool names, docstrings, and sink — differing only in whether the input is actually
-exploitable. A scanner that grepped for `subprocess` flags both and scores 50% precision.
+A corpus of nothing but vulnerable servers measures recall and nothing else, and a scanner that
+flags every line scores 100% on it. So every vulnerable case has a safe twin sharing its
+imports, tool names, docstrings and sink. The only difference is whether the input is actually
+exploitable. Grep for `subprocess` and you flag both, which is 50% precision on the pair.
 
 ## Layout
 
 ```
 corpus/
   SCHEMA.md          ground-truth format and field rules
-  verify.py          executes every label; exit 1 if any case is wrong
+  verify.py          executes every label, exits 1 if any case is wrong
   cases/<id>/
-    server.py        the MCP server
+    server.py        the MCP server (server.js for the JavaScript cases)
     truth.yaml       verdict, class, sink, entry point, proof, pair
+harness/
+  adapters.py        one adapter per scanner configuration
+  run.py             runs the adapters and scores them
+tests/               tests for the scorer and the verifier
 ```
 
 ## Running it
 
 ```console
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python corpus/verify.py            # all cases
-.venv/bin/python corpus/verify.py cmd-injection-001   # one case
+npm install                                            # JavaScript cases and mcp-watch
+
+.venv/bin/python corpus/verify.py                      # every label
+.venv/bin/python corpus/verify.py cmd-injection-001    # one case
+.venv/bin/python -m pytest tests -q                    # the scorer's own tests
+.venv/bin/python harness/run.py                        # score whatever is installed
 ```
 
-Payloads are local and inert — echoing a marker string, never a real attack. Nothing in this
-repo touches a third-party system.
+The harness reports what it cannot find rather than failing, so a fresh clone runs with no
+scanners installed and tells you how to install them.
+
+Payloads are local and inert. They echo a marker string and nothing else, and no case touches
+anything outside its own directory. See [SECURITY.md](SECURITY.md).

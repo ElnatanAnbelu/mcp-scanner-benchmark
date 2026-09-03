@@ -1,6 +1,6 @@
 """Link preview MCP server.
 
-Corpus case ssrf-001 — VULNERABLE. See truth.yaml.
+Corpus case ssrf-001, VULNERABLE. See truth.yaml.
 """
 from __future__ import annotations
 

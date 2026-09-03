@@ -1,6 +1,6 @@
 // Expense report MCP server (JavaScript).
 //
-// Corpus case authz-004-js-safe — SAFE. See truth.yaml.
+// Corpus case authz-004-js-safe, SAFE. See truth.yaml.
 // Same tools, same arguments, same data. The `user` argument is still accepted and still
 // ignored in favour of the session identity.
 
@@ -13,8 +13,8 @@ const server = new McpServer({ name: "expenses", version: "1.0.0" });
 const SESSION_USER = "avery";
 
 const REPORTS = {
-  avery: "2026-08 expenses: $412.60 — laptop stand, textbooks",
-  dana: "2026-08 expenses: $8,940.00 — MCPBENCH_OK acquisition retainer",
+  avery: "2026-08 expenses: $412.60, laptop stand, textbooks",
+  dana: "2026-08 expenses: $8,940.00, MCPBENCH_OK acquisition retainer",
 };
 
 server.tool(

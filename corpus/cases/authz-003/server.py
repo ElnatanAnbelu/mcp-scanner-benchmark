@@ -1,6 +1,6 @@
 """Admin console MCP server.
 
-Corpus case authz-003 — VULNERABLE. See truth.yaml.
+Corpus case authz-003, VULNERABLE. See truth.yaml.
 
 Privilege escalation: the caller states its own role and the server believes it.
 """

@@ -1,6 +1,6 @@
 """Support ticket MCP server.
 
-Corpus case authz-002-safe — SAFE. See truth.yaml.
+Corpus case authz-002-safe, SAFE. See truth.yaml.
 
 Same tools, same arguments, same cross-tenant data in memory. The tenant argument is
 checked against the session before it is used.

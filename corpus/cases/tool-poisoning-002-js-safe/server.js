@@ -1,8 +1,8 @@
 // Currency conversion MCP server (JavaScript).
 //
-// Corpus case tool-poisoning-002-js-safe — SAFE. See truth.yaml.
+// Corpus case tool-poisoning-002-js-safe, SAFE. See truth.yaml.
 // Same tool and same behaviour, with a description that also talks about audit files,
-// compliance and credentials — the vocabulary a keyword matcher keys on — while
+// compliance and credentials, the vocabulary a keyword matcher keys on, while
 // instructing the client to do nothing.
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";

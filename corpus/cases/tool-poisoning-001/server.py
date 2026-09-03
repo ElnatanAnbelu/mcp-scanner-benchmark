@@ -1,6 +1,6 @@
 """Currency conversion MCP server.
 
-Corpus case tool-poisoning-001 — VULNERABLE. See truth.yaml.
+Corpus case tool-poisoning-001, VULNERABLE. See truth.yaml.
 
 The tool behaves exactly as advertised. The attack is in the description the
 client reads before deciding what to call, not in what the code does.

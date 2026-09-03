@@ -2,11 +2,12 @@
 
 Every published number depends on this scorer being right, so the failure modes it was
 built to avoid are pinned here: counting a case an adapter cannot see, treating a crash
-as a miss, and — the one that matters most — calling it a detection when a scanner flags
+as a miss, and, the one that matters most, calling it a detection when a scanner flags
 a vulnerability and its fix identically.
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -153,3 +154,23 @@ def test_first_json_object_ignores_surrounding_banner_text():
 
 def test_first_json_object_returns_none_when_there_is_no_object():
     assert adapters._first_json_object("no json here") is None
+
+
+def test_a_partial_run_refuses_to_overwrite_a_fuller_results_file(tmp_path, monkeypatch, capsys):
+    """A run with scanners missing must not silently replace published results."""
+    out = tmp_path / "results.json"
+    out.write_text(json.dumps({"adapters": [
+        {"adapter": "a", "counts": {"tp": 1}},
+        {"adapter": "b", "counts": {"tp": 2}},
+    ]}), encoding="utf-8")
+    before = out.read_text(encoding="utf-8")
+
+    monkeypatch.setattr(adapters, "ALL", [FakeAdapter(flags={"v"})])
+    monkeypatch.setattr(run, "load_cases", lambda only: PAIR)
+
+    assert run.main(["--json", str(out)]) == 1
+    assert out.read_text(encoding="utf-8") == before        # untouched
+    assert "refusing to overwrite" in capsys.readouterr().err
+
+    assert run.main(["--json", str(out), "--force"]) == 0   # asked twice, writes
+    assert out.read_text(encoding="utf-8") != before

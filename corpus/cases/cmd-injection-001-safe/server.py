@@ -1,6 +1,6 @@
 """Network diagnostic MCP server.
 
-Corpus case cmd-injection-001-safe — SAFE. See truth.yaml.
+Corpus case cmd-injection-001-safe, SAFE. See truth.yaml.
 
 Deliberately the same shape as cmd-injection-001: same imports, same tool names,
 same docstrings, same subprocess sink. Only the argument handling differs.

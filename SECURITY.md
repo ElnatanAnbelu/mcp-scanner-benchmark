@@ -2,7 +2,7 @@
 
 ## What lives in this repository
 
-Deliberately vulnerable MCP servers. That is the point of it — they are the cases scanners are
+Deliberately vulnerable MCP servers. That is the point of it: they are the cases scanners are
 measured against.
 
 They are safe to hold and safe to run under `corpus/verify.py`, which is what CI does on every
@@ -20,9 +20,9 @@ a caller puts in its argument, and that is exactly what it is for.
 
 ## Reporting a problem with this repository
 
-If you find something here that is unsafe in a way the above does not describe — a case that
+If you find something here that is unsafe in a way the above does not describe (a case that
 escapes its directory, a payload that is not inert, a proof that touches something outside the
-corpus — open an issue. There is nothing secret in this repository and no user data, so a
+corpus), open an issue. There is nothing secret in this repository and no user data, so a
 public issue is fine and faster.
 
 ## Findings about other people's tools

@@ -9,8 +9,8 @@ Every result is reproducible in one command, and every finding keeps the scanner
 under `raw` in `harness/results-latest.json`, so a disagreement can be settled by looking
 rather than arguing. Useful things to point at:
 
-- **Wrong invocation.** If the adapter runs your tool in a way that undersells it — a missing
-  flag, the wrong mode, a config it needs — say so and it gets fixed. This has already
+- **Wrong invocation.** If the adapter runs your tool in a way that undersells it (a missing
+  flag, the wrong mode, a config it needs), say so and it gets fixed. This has already
   happened once: MCTS returns one generic finding when handed a directory and nine when
   handed the entrypoint file, and the adapter was corrected to use the file.
 - **Wrong configuration.** Tools are scored in their intended configuration, not their
@@ -51,7 +51,7 @@ Two rules that keep the numbers meaningful:
   outcome from one that runs and finds nothing, and collapsing them misreports both.
 
 If your tool needs a severity filter to avoid counting architectural notes as detections, put
-it in the adapter and say why in the docstring — that is a judgement call and it should be
+it in the adapter and say why in the docstring. That is a judgement call and it should be
 visible.
 
 ## Adding a case
@@ -60,12 +60,12 @@ Every case needs a **safe twin**. A vulnerable case alone measures recall and no
 a scanner that flags every file scores 100%.
 
 1. `corpus/cases/<id>/` with `server.py` (or `server.js` plus `package.json`)
-2. `corpus/cases/<id>-safe/` — the same shape, the same imports, the same sink, differing only
+2. `corpus/cases/<id>-safe/` with the same shape, the same imports and the same sink, differing only
    in whether the vulnerability is real. Make it hard to separate by surface features.
 3. A `truth.yaml` in each, per [corpus/SCHEMA.md](corpus/SCHEMA.md), with a `proof` block
 4. `python3 corpus/verify.py` must pass before you open the PR
 
-Payloads stay local and inert — echo a marker string, never a real attack, never anything
+Payloads stay local and inert, echo a marker string, never a real attack, never anything
 that leaves the case directory.
 
 A claim about a whole vulnerability class needs at least three variants of it. One pair is an

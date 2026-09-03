@@ -1,7 +1,7 @@
 """Tests for the corpus verifier.
 
 The verifier is what lets this project claim its labels are executed rather than
-asserted, so its own failure modes are pinned here — including the two real bugs it
+asserted, so its own failure modes are pinned here, including the two real bugs it
 shipped with, both of which made a case pass for the wrong reason.
 """
 from __future__ import annotations

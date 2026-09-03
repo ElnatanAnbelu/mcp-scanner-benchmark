@@ -2,7 +2,7 @@ id: ssrf-001
 language: python
 verdict: vulnerable
 class: CWE-918
-title: Unrestricted URL fetch — no scheme allowlist, no destination filter
+title: Unrestricted URL fetch, no scheme allowlist, no destination filter
 
 sink:
   file: server.py
@@ -27,6 +27,6 @@ proof:
 pair: ssrf-001-safe
 notes: >
   urlopen honours whatever scheme it is handed, so file:// turns a link previewer
-  into an arbitrary file reader — the same missing check that lets http://169.254.169.254
+  into an arbitrary file reader, the same missing check that lets http://169.254.169.254
   reach cloud metadata. The proof uses file:// because it is provable offline and
   stays inside the case directory; the underlying defect is one missing allowlist.

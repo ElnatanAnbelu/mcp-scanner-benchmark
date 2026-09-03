@@ -1,6 +1,6 @@
 """Team notes MCP server.
 
-Corpus case path-traversal-001 — VULNERABLE. See truth.yaml.
+Corpus case path-traversal-001, VULNERABLE. See truth.yaml.
 """
 from __future__ import annotations
 

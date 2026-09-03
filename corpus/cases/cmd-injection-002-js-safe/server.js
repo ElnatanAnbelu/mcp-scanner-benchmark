@@ -1,6 +1,6 @@
 // Network diagnostic MCP server (JavaScript).
 //
-// Corpus case cmd-injection-002-js-safe — SAFE. See truth.yaml.
+// Corpus case cmd-injection-002-js-safe, SAFE. See truth.yaml.
 // Same shape as cmd-injection-002-js: same tool, same docstring, same child_process
 // import. The argument is validated and passed as argv instead of a shell string.
 

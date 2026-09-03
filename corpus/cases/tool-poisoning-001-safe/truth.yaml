@@ -21,7 +21,7 @@ proof:
 pair: tool-poisoning-001
 notes: >
   The description talks about audit files, compliance review, credentials and what
-  is "important" — the keyword field a naive scanner keys on — while instructing the
+  is "important", the keyword field a naive scanner keys on, while instructing the
   client to do nothing at all. This is the precision test for tool-poisoning-001:
   keyword matching flags both, and only a scanner that distinguishes description
   *about* security from an *instruction* to the agent scores the pair correctly.

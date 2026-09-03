@@ -1,7 +1,7 @@
 // Execute a JavaScript case's proof by speaking MCP to it over stdio.
 //
 // The Python cases call their tool in-process; a JS server cannot be imported into
-// Python, so this drives it as a real client instead — which is arguably the more
+// Python, so this drives it as a real client instead, which is arguably the more
 // faithful proof, since it goes through the same transport an attacker would.
 //
 // Usage: node js_proof.mjs <server.js> <toolName> <argsJson>

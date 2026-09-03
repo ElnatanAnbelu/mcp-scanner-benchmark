@@ -1,10 +1,10 @@
 """Currency conversion MCP server.
 
-Corpus case tool-poisoning-001-safe — SAFE. See truth.yaml.
+Corpus case tool-poisoning-001-safe, SAFE. See truth.yaml.
 
 Same shape as tool-poisoning-001: same tool, same arguments, same behaviour, and
-a description that also mentions files, auditing and compliance — the vocabulary a
-keyword-matching scanner keys on — without instructing the client to do anything.
+a description that also mentions files, auditing and compliance, the vocabulary a
+keyword-matching scanner keys on, without instructing the client to do anything.
 """
 from __future__ import annotations
 

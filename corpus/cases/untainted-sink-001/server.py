@@ -1,6 +1,6 @@
 """Disk usage MCP server.
 
-Corpus case untainted-sink-001 — SAFE. See truth.yaml.
+Corpus case untainted-sink-001, SAFE. See truth.yaml.
 
 A third dimension after reachable/unreachable: the sink is dangerous *and* reachable
 from a tool, but no tool argument reaches it. Only taint analysis gets this right.

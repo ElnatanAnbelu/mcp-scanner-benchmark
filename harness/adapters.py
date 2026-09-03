@@ -1,14 +1,14 @@
 """Scanner adapters.
 
 One adapter per scanner *configuration*, not per scanner. Tools expose several modes
-that inspect different surfaces — Cisco's stdio mode reads live tool metadata while its
-behavioural mode reads source — and a mode can only find what its surface contains.
+that inspect different surfaces, Cisco's stdio mode reads live tool metadata while its
+behavioural mode reads source, and a mode can only find what its surface contains.
 Scoring a metadata scanner against a source-level bug measures nothing except the
 question being wrong, so each adapter declares its surfaces and the scorer counts it
 only against cases those surfaces can reach.
 
 An adapter reports `available` when it can actually run here. Cisco's source analysis
-needs an LLM API key, so it is present but unavailable offline — which is itself a
+needs an LLM API key, so it is present but unavailable offline, which is itself a
 property worth publishing: a benchmark nobody can reproduce without paid credentials
 is not much of a benchmark.
 """
@@ -135,7 +135,7 @@ class CiscoStdioYara(Adapter):
             if not isinstance(item, dict):
                 continue
             # Two independent signals: a per-analyzer finding count, and an is_safe
-            # verdict. Trust either one flagging, and record when they disagree —
+            # verdict. Trust either one flagging, and record when they disagree , 
             # a scanner contradicting itself is worth reporting, not silently resolving.
             total = _total_findings(item.get("findings") or {})
             is_safe = item.get("is_safe")
@@ -154,7 +154,7 @@ class CiscoStdioYara(Adapter):
 
 
 class CiscoBehavioural(Adapter):
-    """cisco-ai-defense/mcp-scanner, behavioural mode — source-level.
+    """cisco-ai-defense/mcp-scanner, behavioural mode, source-level.
 
     Present for completeness and unavailable without credentials: the CLI refuses with
     "LLM provider API key is required for alignment verification".
@@ -176,7 +176,7 @@ class CiscoBehavioural(Adapter):
 
 
 class McpWatchLocal(Adapter):
-    """kapilduraphe/mcp-watch, scan-local mode — source-level, JS/TS only.
+    """kapilduraphe/mcp-watch, scan-local mode, source-level, JS/TS only.
 
     Twelve vulnerability categories including tool poisoning and ANSI escape injection.
     Measured here to read JavaScript and TypeScript only: the same poisoned tool
@@ -232,13 +232,13 @@ class McpWatchLocal(Adapter):
 
 
 class Ramparts(Adapter):
-    """highflame-ai/ramparts — connects to a live server and reads its tools.
+    """highflame-ai/ramparts, connects to a live server and reads its tools.
 
     Two things worth recording about how it deploys. `cargo install ramparts` ships no
     YARA rules ("Pattern-based detection is DISABLED for this run"), and the LLM
     analyser's api_key is empty in the generated config, so a default install has both
     detection engines off and reports a clean bill of health on anything. Scored here
-    with the rules fetched from the repository — its intended configuration — via
+    with the rules fetched from the repository, its intended configuration, via
     tools/setup-ramparts.sh.
 
     It takes a URL rather than a command, so each case is handed over as a generated
@@ -316,7 +316,7 @@ class Ramparts(Adapter):
 
 
 class Mcts(Adapter):
-    """MCP-Audit/MCTS — local-first source scanner with behavioural taint analysis.
+    """MCP-Audit/MCTS, local-first source scanner with behavioural taint analysis.
 
     Of the tools installed here, the only source-surface scanner that reads Python, which
     makes it the one able to reach most of this corpus. Others exist that were not tried.
@@ -324,7 +324,7 @@ class Mcts(Adapter):
     Target the entrypoint file, not the case directory: pointed at a directory it
     returns a single generic "Stdio MCP server trust boundary" note and nothing else,
     while the same case as a file yields nine findings including the taint path. That
-    is a usability trap worth recording — a user scanning a repo directory gets a clean
+    is a usability trap worth recording, a user scanning a repo directory gets a clean
     bill of health for a server with a critical injection in it.
     """
 
@@ -369,7 +369,7 @@ class Mcts(Adapter):
                                   seconds=seconds)
             payload = json.loads(out.read_text(encoding="utf-8"))
 
-        # Every case — vulnerable or safe — draws the same low-severity architectural
+        # Every case, vulnerable or safe, draws the same low-severity architectural
         # notes ("Stdio MCP server trust boundary"). Counting those as detections would
         # make any scanner look perfect, so only critical/high findings count as a flag.
         findings = [
@@ -382,7 +382,7 @@ class Mcts(Adapter):
 
 
 class Mcpwn(Adapter):
-    """Teycir/Mcpwn — live exploitation against a running server (the runtime surface).
+    """Teycir/Mcpwn, live exploitation against a running server (the runtime surface).
 
     Zero-dependency Python that drives a real server, injects payloads and confirms by
     semantic oracle (uid=, root:x:, private-key headers, timing deviation, DNS callback).
@@ -390,7 +390,7 @@ class Mcpwn(Adapter):
 
     It crashes before reaching any of that: tests/state_desync.py line 63 calls
     `self.pentester.send_notification(...)`, which is defined nowhere in the repository,
-    and the desync test runs unconditionally ahead of everything else — so `--quick` and
+    and the desync test runs unconditionally ahead of everything else, so `--quick` and
     `--rce-only` crash too. Not a regression: the call arrived in the initial commit and no
     commit since has touched it, so v1.0.0 fails identically. The scan is still attempted per case and the
     crash recorded as an error rather than a miss, because a tool that cannot run is a
@@ -472,7 +472,7 @@ def _git_commit(repo: Path) -> str:
     """Short commit of a vendored *checkout*, or "".
 
     Guarded against the trap this hit once: a copied tree has no .git of its own, so
-    `git rev-parse` walks up and answers with the enclosing repository's commit — which
+    `git rev-parse` walks up and answers with the enclosing repository's commit, which
     would have published this benchmark's own hash as the scanner's version.
     """
     repo = Path(repo)
@@ -554,6 +554,6 @@ ALL: list[Adapter] = [CiscoStdioYara(), CiscoBehavioural(), McpWatchLocal(), Ram
 
 if __name__ == "__main__":
     for a in ALL:
-        state = "available" if a.available() else f"unavailable — needs {a.requires}"
+        state = "available" if a.available() else f"unavailable, needs {a.requires}"
         print(f"{a.name:32} surfaces={','.join(a.surfaces):10} langs={','.join(a.languages):28} {state}")
     sys.exit(0)

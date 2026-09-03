@@ -1,6 +1,6 @@
 // Team notes MCP server (JavaScript).
 //
-// Corpus case path-traversal-002-js — VULNERABLE. See truth.yaml.
+// Corpus case path-traversal-002-js, VULNERABLE. See truth.yaml.
 // The JavaScript twin of path-traversal-001.
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";

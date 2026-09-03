@@ -1,6 +1,6 @@
 """Link preview MCP server.
 
-Corpus case ssrf-001-safe — SAFE. See truth.yaml.
+Corpus case ssrf-001-safe, SAFE. See truth.yaml.
 
 Same shape as ssrf-001: same tool name, same docstring, same urlopen sink.
 Only the scheme and destination checks differ.

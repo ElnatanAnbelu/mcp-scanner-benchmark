@@ -23,7 +23,7 @@ proof:
 pair: unreachable-sink-001-reachable
 notes: >
   subprocess.run(..., shell=True) on an interpolated argument sits at line 26 and is
-  as dangerous as any sink in this corpus — but _run_maintenance is registered as
+  as dangerous as any sink in this corpus, but _run_maintenance is registered as
   nothing and called by nothing, so no MCP client can reach it. Every exposed tool
   reads a dict.
 
