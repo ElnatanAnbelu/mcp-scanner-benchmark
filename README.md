@@ -124,12 +124,18 @@ with no sink or a safe case declaring a CWE class.
 
 ## Results
 
-Eight adapters over seven tools, 28 cases. Reproduce with `python3 harness/run.py`. Every number
+Nine adapters over eight tools, 28 cases. Reproduce with `python3 harness/run.py`. Every number
 names the version it came from.
 
 SkillSpector is the strongest source scanner measured: 3 of 14 pairs, against MCTS's 1 of 14,
 and the only one above 50% precision because it stays quiet on most safe twins rather than
 flagging everything. It is still 3 of 14.
+
+**Three of the eight tools cannot be run at all without paying.** Cisco's behavioural mode
+wants an LLM key, Snyk's agent-scan wants an account token and sends the analysis to their
+cloud, and Tencent's mcp-scan refuses to start without one of three LLM keys and exposes no
+static-only path. They are listed and unscored rather than left out, because a capability
+nobody can reproduce for free is a property of the tool worth publishing.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|---------------------|
@@ -141,6 +147,7 @@ flagging everything. It is still 3 of 14.
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
 | `snyk-agent-scan/scan` | 0.6.1 | metadata | any | | | | | | | needs SNYK_TOKEN |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
+| `tencent-mcp-scan/repo` | AI-Infra-Guard | source | | | | | | | | needs an LLM API key |
 
 Both metadata adapters run with their LLM analyser off: ramparts on its YARA rules with
 `llm.api_key` empty, Cisco with `--analyzers yara`. That is the same condition for which
