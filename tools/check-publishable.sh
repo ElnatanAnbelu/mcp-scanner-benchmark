@@ -8,11 +8,24 @@ here="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$here"
 status=0
 
-for f in PLAN.md .env config.yaml; do
-  if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
-    echo "FAIL tracked file that must not be published: $f"; status=1
-  fi
-done
+# This tree exists twice: inside the private workspace, where PLAN.md is the planning
+# document and belongs, and as the standalone public repository, where it must never
+# appear. The remote tells them apart, so the check runs where publishing happens.
+remote="$(git remote get-url origin 2>/dev/null || true)"
+case "$remote" in
+  *mcp-scanner-benchmark*) published=1 ;;
+  *) published=0 ;;
+esac
+
+if [ "$published" -eq 1 ]; then
+  for f in PLAN.md .env config.yaml; do
+    if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+      echo "FAIL tracked file that must not be published: $f"; status=1
+    fi
+  done
+else
+  echo "note  private workspace copy; skipping the published-file check"
+fi
 
 # Identifiers belonging to the private workspace rather than to this repository.
 # This script is excluded because it necessarily contains the patterns it looks for,

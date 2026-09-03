@@ -124,16 +124,22 @@ with no sink or a safe case declaring a CWE class.
 
 ## Results
 
-Six adapters over five tools, 28 cases. Reproduce with `python3 harness/run.py`. Every number
+Eight adapters over seven tools, 28 cases. Reproduce with `python3 harness/run.py`. Every number
 names the version it came from.
+
+SkillSpector is the strongest source scanner measured: 3 of 14 pairs, against MCTS's 1 of 14,
+and the only one above 50% precision because it stays quiet on most safe twins rather than
+flagging everything. It is still 3 of 14.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|---------------------|
+| `skillspector/scan` | 2.11.0 | source | Python, JS/TS | 6 | 3 | 11 | 8 | 67% | 43% | **3/14** |
 | `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
 | `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
 | `mcts/scan` | 0.1.4 | source | Python, JS/TS | 10 | 9 | 5 | 4 | 53% | 71% | 1/14 |
 | `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | 0/4 |
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
+| `snyk-agent-scan/scan` | 0.6.1 | metadata | any | | | | | | | needs SNYK_TOKEN |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
 
 Both metadata adapters run with their LLM analyser off: ramparts on its YARA rules with
@@ -308,6 +314,7 @@ tests/               tests for the scorer and the verifier
 ```console
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 npm install                                            # JavaScript cases and mcp-watch
+tools/setup-adapters.sh                                # one venv per scanner, under .envs/
 
 .venv/bin/python corpus/verify.py                      # every label
 .venv/bin/python corpus/verify.py cmd-injection-001    # one case

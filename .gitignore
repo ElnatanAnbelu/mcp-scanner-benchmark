@@ -11,3 +11,5 @@ vendor/mcts
 
 # Internal planning doc; lives in the private workspace, never here.
 PLAN.md
+
+.envs/

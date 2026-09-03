@@ -24,8 +24,30 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-VENV_PYTHON = REPO / ".venv" / "bin" / "python"
+VENV_PYTHON = REPO / ".venv" / "bin" / "python"      # runs the corpus servers
+ENVS = REPO / ".envs"                                 # one venv per scanner
 SURFACES = ("metadata", "source", "runtime")
+
+
+def adapter_python(slug: str) -> Path:
+    """The interpreter for one scanner's isolated environment.
+
+    Scanners pin their own dependencies and some of those conflict with the corpus.
+    snyk-agent-scan requires mcp<2 and installing it into the shared environment
+    downgraded mcp from 2.1.1 to 1.28.1, which broke 20 of 28 cases: the corpus servers
+    import MCPServer, which only exists in 2.x. The verifier caught it loudly rather than
+    quietly producing wrong numbers, but a benchmark should not be one `pip install` away
+    from corrupting its own ground truth.
+
+    So each scanner gets its own venv under .envs/<slug>/ and the corpus keeps .venv to
+    itself. tools/setup-adapters.sh builds them.
+    """
+    return ENVS / slug / "bin" / "python"
+
+
+def adapter_bin(slug: str, name: str) -> Path:
+    """An executable inside one scanner's isolated environment."""
+    return ENVS / slug / "bin" / name
 
 
 @dataclass
@@ -100,14 +122,17 @@ class CiscoStdioYara(Adapter):
     languages = ("python", "javascript", "typescript")   # reads a live server, not source
     requires = "pip install cisco-ai-mcp-scanner"
 
+    slug = "cisco"
+
     def __init__(self) -> None:
-        self.binary = shutil.which("mcp-scanner") or str(REPO / ".venv" / "bin" / "mcp-scanner")
+        self.binary = str(adapter_bin(self.slug, "mcp-scanner"))
 
     def available(self) -> bool:
         return Path(self.binary).is_file() and VENV_PYTHON.is_file()
 
     def resolve_version(self) -> str:
-        return _run_version([str(VENV_PYTHON), "-c", "import importlib.metadata as m;"
+        return _run_version([str(adapter_python(self.slug)), "-c",
+                             "import importlib.metadata as m;"
                              "print(m.version('cisco-ai-mcp-scanner'))"])
 
     def scan(self, case_dir: Path) -> ScanResult:
@@ -322,6 +347,93 @@ class Ramparts(Adapter):
         return ScanResult(self.name, case_dir.name, findings, seconds=seconds)
 
 
+class SnykAgentScan(Adapter):
+    """snyk/agent-scan, the tool Snyk got by acquiring Invariant Labs' mcp-scan.
+
+    Launches the stdio servers in a config and inspects the tools they advertise, so it
+    reads the metadata surface like ramparts and Cisco's YARA mode do.
+
+    Two things about it are worth publishing rather than working around. It needs
+    SNYK_TOKEN, so its analysis is a cloud call and nobody can reproduce a result without
+    an account. And it pins mcp<2: installing it into the corpus environment downgraded
+    mcp from 2.1.1 to 1.28.1 and broke 20 of 28 cases, which is what prompted every
+    scanner getting its own environment.
+    """
+
+    name = "snyk-agent-scan/scan"
+    slug = "snyk"
+    surfaces = ("metadata",)
+    languages = ("python", "javascript", "typescript")
+    requires = "tools/setup-adapters.sh, and SNYK_TOKEN in the environment"
+
+    def __init__(self) -> None:
+        self.binary = str(adapter_bin(self.slug, "snyk-agent-scan"))
+
+    def available(self) -> bool:
+        return Path(self.binary).is_file() and bool(os.environ.get("SNYK_TOKEN"))
+
+    def resolve_version(self) -> str:
+        return _run_version([str(adapter_python(self.slug)), "-c",
+                             "import importlib.metadata as m;"
+                             "print(m.version('snyk-agent-scan'))"])
+
+    def scan(self, case_dir: Path) -> ScanResult:
+        import tempfile
+        import time
+        server, command = _server_and_runner(case_dir)
+        if not server:
+            return ScanResult(self.name, case_dir.name, [], ran=False, error="no server file")
+
+        started = time.time()
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Path(tmp) / "mcp.json"
+            cfg.write_text(json.dumps(
+                {"mcpServers": {case_dir.name: {"command": command, "args": [str(server)]}}}),
+                encoding="utf-8")
+            try:
+                proc = subprocess.run(
+                    [self.binary, "scan", str(cfg), "--json",
+                     "--dangerously-run-mcp-servers", "--suppress-mcpserver-io=true"],
+                    capture_output=True, text=True, timeout=300, cwd=str(REPO),
+                    env={**os.environ, "NO_COLOR": "1"})
+            except subprocess.TimeoutExpired:
+                return ScanResult(self.name, case_dir.name, [], ran=False, error="timeout",
+                                  seconds=time.time() - started)
+        seconds = time.time() - started
+
+        payload = _first_json_object(proc.stdout)
+        if payload is None:
+            detail = (proc.stderr or proc.stdout).strip()[:300]
+            return ScanResult(self.name, case_dir.name, [], ran=False,
+                              error=detail or f"exit {proc.returncode}, no JSON",
+                              seconds=seconds)
+
+        findings = [
+            Finding(case_dir.name,
+                    f"{f.get('type') or f.get('category') or ''}: "
+                    f"{f.get('title') or f.get('message', '')}"[:160],
+                    severity=str(f.get("severity", "")), raw=f)
+            for f in _snyk_findings(payload) if isinstance(f, dict)
+        ]
+        return ScanResult(self.name, case_dir.name, findings, seconds=seconds)
+
+
+def _snyk_findings(payload: dict) -> list:
+    """Findings out of agent-scan's JSON, whichever key this version nests them under."""
+    for key in ("findings", "issues", "results", "vulnerabilities"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+    out = []
+    for value in payload.values():
+        if isinstance(value, dict):
+            out.extend(_snyk_findings(value))
+        elif isinstance(value, list):
+            out.extend(v for v in value if isinstance(v, dict) and
+                       ({"severity", "title", "type"} & set(v)))
+    return out
+
+
 class Mcts(Adapter):
     """MCP-Audit/MCTS, local-first source scanner with behavioural taint analysis.
 
@@ -341,7 +453,7 @@ class Mcts(Adapter):
     requires = "pip install -e vendor/mcts (git clone MCP-Audit/MCTS)"
 
     def __init__(self) -> None:
-        self.binary = shutil.which("mcts") or str(REPO / ".venv" / "bin" / "mcts")
+        self.binary = str(adapter_bin("mcts", "mcts"))
 
     def available(self) -> bool:
         return Path(self.binary).is_file()
@@ -388,6 +500,74 @@ class Mcts(Adapter):
         return ScanResult(self.name, case_dir.name, findings, seconds=seconds)
 
 
+class SkillSpector(Adapter):
+    """NVIDIA/SkillSpector, static mode. Source surface.
+
+    Built for agent skills, but it takes any file or directory and 71 of its patterns
+    include MCP least privilege and MCP tool poisoning, so it reaches this corpus.
+
+    Scored with --no-llm. Its three semantic analysers need an LLM API key and are
+    skipped without one, so this measures the static half only, and says so.
+    """
+
+    name = "skillspector/scan"
+    slug = "skillspector"
+    scored_with = "static patterns only; --no-llm skips its three semantic analysers"
+    surfaces = ("source",)
+    languages = ("python", "javascript", "typescript")
+    requires = "tools/setup-adapters.sh (installs from the NVIDIA repo)"
+
+    def __init__(self) -> None:
+        self.binary = str(adapter_bin(self.slug, "skillspector"))
+
+    def available(self) -> bool:
+        return Path(self.binary).is_file()
+
+    def resolve_version(self) -> str:
+        return _run_version([str(adapter_python(self.slug)), "-c",
+                             "import importlib.metadata as m;"
+                             "print(m.version('skillspector'))"])
+
+    def scan(self, case_dir: Path) -> ScanResult:
+        import tempfile
+        import time
+        server, _ = _server_and_runner(case_dir)
+        if not server:
+            return ScanResult(self.name, case_dir.name, [], ran=False, error="no server file")
+
+        started = time.time()
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "report.json"
+            try:
+                proc = subprocess.run(
+                    [self.binary, "scan", str(server), "--no-llm",
+                     "--format", "json", "--output", str(out)],
+                    capture_output=True, text=True, timeout=300, cwd=str(REPO),
+                    env={**os.environ, "NO_COLOR": "1"})
+            except subprocess.TimeoutExpired:
+                return ScanResult(self.name, case_dir.name, [], ran=False, error="timeout",
+                                  seconds=time.time() - started)
+            seconds = time.time() - started
+            if not out.is_file():
+                detail = (proc.stderr or proc.stdout).strip()[:300]
+                return ScanResult(self.name, case_dir.name, [], ran=False,
+                                  error=detail or f"exit {proc.returncode}, no report",
+                                  seconds=seconds)
+            payload = json.loads(out.read_text(encoding="utf-8"))
+
+        # Findings are under "issues". Only critical and high count, matching the filter
+        # applied to MCTS: every case draws low-severity notes and counting those would
+        # make any scanner look perfect.
+        findings = [
+            Finding(case_dir.name,
+                    f"{i.get('category', '')}: {i.get('pattern') or i.get('id', '')}"[:160],
+                    severity=str(i.get("severity", "")), raw=i)
+            for i in (payload.get("issues") or [])
+            if isinstance(i, dict) and str(i.get("severity", "")).upper() in ("CRITICAL", "HIGH")
+        ]
+        return ScanResult(self.name, case_dir.name, findings, seconds=seconds)
+
+
 class Mcpwn(Adapter):
     """Teycir/Mcpwn, live exploitation against a running server (the runtime surface).
 
@@ -417,7 +597,7 @@ class Mcpwn(Adapter):
 
     def resolve_version(self) -> str:
         commit = _git_commit(self.entry.parent)
-        version = _run_version([str(VENV_PYTHON), str(self.entry), "--version"])
+        version = _run_version([str(adapter_python("mcpwn")), str(self.entry), "--version"])
         return f"{version} @ {commit}" if commit else version
 
     def scan(self, case_dir: Path) -> ScanResult:
@@ -432,7 +612,7 @@ class Mcpwn(Adapter):
             out = Path(tmp) / "findings.json"
             try:
                 proc = subprocess.run(
-                    [str(VENV_PYTHON), str(self.entry), runner, str(server),
+                    [str(adapter_python("mcpwn")), str(self.entry), runner, str(server),
                      "--quick", "--safe-mode", "--output-json", str(out)],
                     capture_output=True, text=True, timeout=300, cwd=str(REPO),
                     env={**os.environ, "NO_COLOR": "1"},
@@ -556,7 +736,8 @@ def _first_json_object(text: str) -> dict | None:
     return None
 
 
-ALL: list[Adapter] = [CiscoStdioYara(), CiscoBehavioural(), McpWatchLocal(), Ramparts(), Mcts(), Mcpwn()]
+ALL: list[Adapter] = [CiscoStdioYara(), CiscoBehavioural(), McpWatchLocal(),
+                      Ramparts(), SnykAgentScan(), Mcts(), SkillSpector(), Mcpwn()]
 
 
 if __name__ == "__main__":

@@ -210,6 +210,18 @@ as what the tool does with everything switched on.
 
 ## 5. Reproducibility
 
+### 5.0 Every scanner gets its own environment
+
+Scanners pin their own dependencies and some of those conflict with the corpus.
+`snyk-agent-scan` requires `mcp<2`, and installing it alongside the corpus downgraded mcp
+from 2.1.1 to 1.28.1, which broke 20 of the 28 cases: the servers import `MCPServer`, which
+exists only in 2.x. `corpus/verify.py` failed loudly rather than letting the harness produce
+wrong numbers against half-broken servers, but a benchmark should not be one `pip install`
+away from corrupting its own ground truth.
+
+So `tools/setup-adapters.sh` builds one virtualenv per scanner under `.envs/<slug>/`, and
+`.venv` belongs to the corpus alone.
+
 ```console
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 npm install # JS corpus cases and mcp-watch
