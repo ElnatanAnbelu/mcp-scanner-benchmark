@@ -1,0 +1,237 @@
+# Methodology
+
+How this benchmark is built, how it scores, and where it can be wrong.
+
+The audience is someone deciding whether to trust the numbers — including the author of a
+tool that scores badly. Every design decision below has a reason, and the ones that could
+bias a result are named as such.
+
+---
+
+## 1. What is being measured
+
+**Question:** given an MCP server, can a scanner tell whether it is vulnerable?
+
+Not "does the scanner produce findings", and not "does it mention the right CWE". The
+question is discrimination: a tool that flags everything and a tool that flags nothing are
+equally useless to a user, and conventional precision/recall over an unbalanced corpus can
+make either look good.
+
+**Non-goals.** This does not measure runtime cost beyond wall-clock, rule counts, report
+quality, remediation advice, or how a tool behaves on real-world repositories at scale. It
+measures detection on a controlled corpus with known answers.
+
+---
+
+## 2. Corpus construction
+
+### 2.1 Cases come in pairs
+
+Every vulnerable case has a **safe twin**: the same defect class, same imports, same tool
+names, same docstrings, same sink — differing only in whether the vulnerability is real.
+
+A corpus of vulnerable servers alone measures recall and nothing else. A scanner that emits
+a finding for every file scores 100%. The twin makes that failure visible: flagging both
+halves scores one true positive *and* one false positive, and discriminates nothing.
+
+The twins are written to be **hard to separate by surface features**. `cmd-injection-001` and
+its safe twin both import `subprocess` and both call it on a tool argument; only the shell
+handling differs. The tool-poisoning safe twin is deliberately stuffed with the vocabulary a
+keyword matcher keys on — audit, compliance, credentials, "important" — while instructing the
+client to do nothing.
+
+### 2.2 Classes and dimensions
+
+Four classes the field already claims to detect, so the benchmark is measuring the same thing
+the tools advertise:
+
+| Class | Pairs |
+|-------|-------|
+| CWE-78 command injection | `cmd-injection-001` (Python), `cmd-injection-002-js` (JavaScript) |
+| CWE-22 path traversal | `path-traversal-001` |
+| CWE-918 SSRF | `ssrf-001` |
+| tool poisoning | `tool-poisoning-001` (Python), `tool-poisoning-002-js` (JavaScript) |
+
+Then three dimensions that separate real analysis from pattern matching:
+
+| Dimension | Pair | The question |
+|-----------|------|--------------|
+| Reachability | `unreachable-sink-001` | Byte-identical `shell=True` helper, wired to a tool in one twin and to nothing in the other. *Can the sink be reached at all?* |
+| Taint | `untainted-sink-001` | A live shell call both twins reach; one passes a constant from a lookup table, the other falls back to the caller's string. *Does attacker input reach it?* |
+| Semantics | `authz-001/002/003` | Broken object-level access, confused deputy, privilege escalation. No shell, no filesystem, no network. *Is this class modelled at all?* |
+
+### 2.3 Why three authorization variants
+
+Because one was nearly an overclaim. On `authz-001` alone, MCTS flags both twins identically
+and the result reads as a categorical "no scanner detects authorization flaws". Adding
+`authz-002` and `authz-003` showed MCTS discriminating one of the three — for the wrong
+reason, but discriminating. A single case would have supported a stronger claim than the
+evidence does.
+
+**Rule adopted:** a claim about a class requires at least three variants of that class. Any
+class-level statement resting on one pair is an anecdote.
+
+### 2.4 Synthetic, and what that costs
+
+Every case is written for this benchmark rather than harvested from real repositories. That
+buys unambiguous ground truth, no disclosure burden, and twins that differ in exactly one
+respect. It costs realism: real servers are longer, messier, and carry framework indirection
+that may defeat analysis these cases do not exercise.
+
+This is the most serious limitation and it is not resolved. See §6.
+
+---
+
+## 3. Ground truth is executed, not asserted
+
+A benchmark whose labels are wrong is worse than none: the first mislabeled case a reviewer
+finds discards the whole leaderboard. So no label is a claim by the author.
+
+Every case carries a `proof` block, and `corpus/verify.py` runs it:
+
+- a **vulnerable** case must demonstrate its payload firing — the oracle string appears
+- its **safe** twin must demonstrate the same payload failing — the oracle does not appear
+
+Python cases are called in-process. JavaScript cases are driven over stdio by a real MCP
+client (`corpus/js_proof.mjs`), which is the more faithful of the two paths since it crosses
+the same transport an attacker would.
+
+### 3.1 Two rules that make a proof mean something
+
+**A payload may not contain its own oracle.** A tool that echoes its input back produces the
+marker without executing anything — this was caught when `unreachable-sink-001` "failed" for
+reflecting its argument, which meant the *passing* shell cases were unproven too. Shell
+payloads split the marker (`echo MCPBENCH""_OK`, which only a shell reassembles) and the
+verifier rejects any `call` proof whose arguments contain the oracle literally.
+
+**A server that cannot start is a hard failure, not a passing safe case.** An import error
+produces no output, which reads as "payload absent" and would pass every safe case. Loading
+is a separate step with its own error.
+
+### 3.2 Schema linting
+
+`verify.py` also rejects: missing required fields, a `vulnerable` case with no class or sink,
+a `safe` case declaring either, a `sink.line` that does not contain the named function, and
+pairs that do not resolve in both directions.
+
+### 3.3 Self-test
+
+The verifier has been checked against a deliberately falsified label (flipping a `safe` case
+to `vulnerable`) and against a deliberately weakened payload (one containing its oracle). It
+rejects both.
+
+---
+
+## 4. Scoring
+
+### 4.1 Surface and language gating
+
+Each case declares the `surfaces` it lives on — `metadata`, `source`, `runtime` — and each
+adapter declares the surfaces it inspects and the languages it parses. **An adapter is scored
+only where those overlap.** Everything else is `skipped`, never counted as a miss.
+
+This is the rule most likely to be disputed, so the reasoning is explicit. Cisco's stdio mode
+reads live tool metadata; its source analysis is a *different mode* behind a paid API key.
+Scoring the metadata mode against a source-level command injection would measure the question,
+not the scanner. Likewise mcp-watch parses JS/TS only and returns a clean zero on Python —
+that is absent coverage, not a detection failure, and reporting it as 0% recall would be a
+smear.
+
+The cost of this rule is that a tool can look good by covering little. `pairs_scored` is
+therefore reported alongside every score: two-for-two on a two-pair surface is not the same
+achievement as eleven-for-eleven.
+
+### 4.2 Counting
+
+```
+tp  vulnerable case, flagged        fn  vulnerable case, missed
+tn  safe case, not flagged          fp  safe case, flagged
+```
+
+"Flagged" means the adapter returned at least one finding after its own severity filter. For
+MCTS only `critical` and `high` count: every case, vulnerable or safe, draws the same
+low-severity architectural notes ("Stdio MCP server trust boundary"), and counting those as
+detections would make any scanner look perfect. This filter is a per-adapter decision recorded
+in that adapter's docstring.
+
+### 4.3 Pair discrimination
+
+**A pair is discriminated only when the vulnerable twin is flagged and the safe twin is not.**
+
+This is the headline metric because precision and recall hide the failure this benchmark
+exists to expose. MCTS scores 82% recall and discriminates 1 of 11 pairs: it flags twin and
+twin alike, so nearly every true positive is a coincidence — something present in both files,
+with the label happening to match.
+
+Pair discrimination answers the only question a user actually has: *can this tool tell a
+vulnerability from its fix?*
+
+### 4.4 Errors are not misses
+
+A tool that crashes is recorded as an error, never as a false negative. Mcpwn crashes on every
+case; reporting that as 0% recall would conflate "cannot run" with "runs and finds nothing".
+
+### 4.5 Availability is a result
+
+A capability behind a paid API key is listed and unscored rather than omitted. Cisco's
+behavioural mode and ramparts' default install both fall here, and both are reported.
+
+---
+
+## 5. Reproducibility
+
+```console
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+npm install                       # JS corpus cases and mcp-watch
+tools/setup-ramparts.sh           # ramparts ships no YARA rules; fetch them
+.venv/bin/python corpus/verify.py # every label must pass before any score is quoted
+.venv/bin/python harness/run.py --json harness/results-latest.json
+```
+
+Scanner versions are pinned by whatever the install produces and recorded in the result JSON.
+Every finding retains its raw payload under `raw`, so any scored outcome can be audited back
+to what the tool actually said.
+
+**Scanners are scored in their intended configuration**, not their broken defaults. ramparts
+with a default `cargo install` detects nothing at all; it is scored with the rules fetched, and
+the default-install gap is reported as a separate finding rather than as a bad score.
+
+---
+
+## 6. Threats to validity
+
+**Synthetic corpus.** The cases are small and written by one author who also knows what the
+scanners look for. Even without intent, that risks cases shaped to the expected answer. The
+mitigation is that twins differ minimally and the labels are executed — but a real-world
+corpus would be stronger and does not exist yet.
+
+**Author is not neutral.** These cases were written by someone who had already read what the
+tools detect. A tool author who believes a case is unfair should be able to demonstrate it
+from the repository, which is why proofs and raw findings are kept.
+
+**Small n.** Eleven pairs. Class-level claims rest on two or three variants, which is enough to
+avoid the n=1 anecdote and not enough for a confidence interval.
+
+**Severity filters are judgement.** The MCTS critical/high filter is defensible and is still a
+choice made by the benchmark author, which shifts that tool's numbers.
+
+**Version drift.** Every result is a snapshot. Mcpwn's crash is at `6e9e8fc`; ramparts'
+missing rules are as of the crate published at the time of the run. Any of this can be fixed
+upstream tomorrow, which is the intended outcome.
+
+**One machine.** All results are from a single macOS host with one Python, Node and Rust
+toolchain. Nothing here is cross-platform verified.
+
+---
+
+## 7. Responsible reporting
+
+Findings that reflect badly on a tool — ramparts shipping without rules, Mcpwn crashing at
+HEAD, MCTS returning almost nothing when pointed at a directory — are defects worth reporting
+upstream before or alongside publication, not gotchas to be sprung. Every one is reproducible
+from this repository with a single command, which is the point: a maintainer should be able to
+confirm or refute it in minutes.
+
+Nothing in this repository scans, probes, or touches a third-party system. Every server is
+written here, every payload echoes a marker string, and every proof stays inside its own case
+directory.

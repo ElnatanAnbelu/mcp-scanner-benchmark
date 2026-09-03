@@ -1,0 +1,34 @@
+id: unreachable-sink-001-reachable
+language: python
+verdict: vulnerable
+class: CWE-78
+title: The same shell sink, one line away from reachable
+
+sink:
+  file: server.py
+  line: 21
+  function: subprocess.run
+  argument: command
+
+surfaces: [source, runtime]
+
+entry:
+  tool: refresh_cache
+  parameter: branch
+  reachable: true
+
+proof:
+  tool: refresh_cache
+  args:
+    branch: "; echo MCPBENCH\"\"_OK"
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: unreachable-sink-001
+notes: >
+  Byte-for-byte the same helper and the same sink as unreachable-sink-001. The only
+  difference is that refresh_cache passes a tool argument into it, so the shell
+  interpolation is now attacker-controlled.
+
+  The pair is the cleanest statement of what reachability analysis is for: two files
+  that a sink-matching scanner cannot tell apart, with opposite correct answers.

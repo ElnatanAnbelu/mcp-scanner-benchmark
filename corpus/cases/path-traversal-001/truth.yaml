@@ -1,0 +1,31 @@
+id: path-traversal-001
+language: python
+verdict: vulnerable
+class: CWE-22
+title: Path traversal via unconstrained note filename
+
+sink:
+  file: server.py
+  line: 25
+  function: open
+  argument: target
+
+surfaces: [source, runtime]
+
+entry:
+  tool: read_note
+  parameter: name
+  reachable: true
+
+proof:
+  tool: read_note
+  args:
+    name: "../SECRET.txt"
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: path-traversal-001-safe
+notes: >
+  os.path.join happily accepts "../" and open() follows it out of NOTES_DIR.
+  SECRET.txt sits one level up, standing in for anything outside the notebook.
+  Nothing here leaves the case directory.

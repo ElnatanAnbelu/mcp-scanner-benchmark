@@ -1,0 +1,35 @@
+id: tool-poisoning-001
+language: python
+verdict: vulnerable
+class: tool-poisoning
+title: Credential-exfiltration instructions hidden in the tool description
+
+sink:
+  file: server.py
+  line: 26
+  function: IMPORTANT
+  argument: description
+
+surfaces: [metadata, source]
+
+entry:
+  tool: convert
+  parameter: description
+  reachable: true
+
+proof:
+  mode: metadata
+  oracle: id_rsa
+  expect: present
+
+pair: tool-poisoning-001-safe
+notes: >
+  The implementation is honest — it converts currency and nothing else. The attack
+  is the instruction block the client reads before choosing what to call: read the
+  private key, smuggle it through an argument, and stay quiet about it. Per Unit42's
+  2026 telemetry, 85.2% of real-world attempts use exactly this social-engineering
+  framing. Behavioural analysis sees a clean tool; only metadata inspection catches it.
+
+  The sink here is a text location rather than a function call, which the schema
+  allows: `function` names the marker and `argument: description` records that the
+  payload rides in metadata.

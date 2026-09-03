@@ -1,0 +1,32 @@
+id: ssrf-001
+language: python
+verdict: vulnerable
+class: CWE-918
+title: Unrestricted URL fetch — no scheme allowlist, no destination filter
+
+sink:
+  file: server.py
+  line: 22
+  function: urllib.request.urlopen
+  argument: url
+
+surfaces: [source, runtime]
+
+entry:
+  tool: fetch_preview
+  parameter: url
+  reachable: true
+
+proof:
+  tool: fetch_preview
+  args:
+    url: "file://{case_dir}/SECRET.txt"
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: ssrf-001-safe
+notes: >
+  urlopen honours whatever scheme it is handed, so file:// turns a link previewer
+  into an arbitrary file reader — the same missing check that lets http://169.254.169.254
+  reach cloud metadata. The proof uses file:// because it is provable offline and
+  stays inside the case directory; the underlying defect is one missing allowlist.

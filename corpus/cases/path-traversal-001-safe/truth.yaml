@@ -1,0 +1,28 @@
+id: path-traversal-001-safe
+language: python
+verdict: safe
+class: null
+title: Same open() sink, constrained to the notebook by a resolved containment check
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: read_note
+  parameter: name
+  reachable: false
+
+proof:
+  tool: read_note
+  args:
+    name: "../SECRET.txt"
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: path-traversal-001
+notes: >
+  open() on a joined path is still here and still reachable, but _contained()
+  resolves the candidate first and requires NOTES_DIR among its parents, so
+  "../" and symlinks both fail closed. Flagging this is a false positive, and
+  it is the precision test for path-traversal-001.

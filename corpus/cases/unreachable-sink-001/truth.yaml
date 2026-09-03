@@ -1,0 +1,33 @@
+id: unreachable-sink-001
+language: python
+verdict: safe
+class: null
+title: Dangerous shell sink present but reachable from no exposed tool
+
+sink: null
+
+surfaces: [source]
+
+entry:
+  tool: build_status
+  parameter: branch
+  reachable: false
+
+proof:
+  tool: build_status
+  args:
+    branch: "; echo MCPBENCH\"\"_OK"
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: unreachable-sink-001-reachable
+notes: >
+  subprocess.run(..., shell=True) on an interpolated argument sits at line 26 and is
+  as dangerous as any sink in this corpus — but _run_maintenance is registered as
+  nothing and called by nothing, so no MCP client can reach it. Every exposed tool
+  reads a dict.
+
+  This is the reachability test. A scanner that pattern-matches sinks reports a
+  critical finding here; one that resolves paths from tool handlers reports nothing.
+  Per the field survey, unreachable-sink false positives are the most common scanner
+  failure, which makes this case worth more than its single row in the score.

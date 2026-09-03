@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+vendor/
+config.yaml
+
+vendor/mcpwn
+mcts_analysis/
+vendor/mcts

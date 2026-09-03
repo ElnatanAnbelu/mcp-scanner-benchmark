@@ -1,0 +1,28 @@
+id: authz-001-safe
+language: python
+verdict: safe
+class: null
+title: Same tool signature, authorization derived from the session rather than the argument
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: get_report
+  parameter: user
+  reachable: false
+
+proof:
+  tool: get_report
+  args:
+    user: dana
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: authz-001
+notes: >
+  The `user` argument is still in the signature and still in the schema a client
+  sees — it is simply refused when it disagrees with the session identity. The two
+  servers are indistinguishable from tool metadata alone, so this pair also tests
+  whether a scanner reasons about the handler body or only about the interface.

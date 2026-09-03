@@ -1,0 +1,33 @@
+id: cmd-injection-001
+language: python
+verdict: vulnerable
+class: CWE-78
+title: Shell command injection via unvalidated tool argument
+
+sink:
+  file: server.py
+  line: 23
+  function: subprocess.run
+  argument: cmd
+
+surfaces: [source, runtime]
+
+entry:
+  tool: run_diagnostic
+  parameter: target
+  reachable: true
+
+proof:
+  tool: run_diagnostic
+  args:
+    target: "; echo MCPBENCH\"\"_OK"
+  oracle: MCPBENCH_OK
+  expect: present          # the injected command runs
+
+pair: cmd-injection-001-safe
+notes: >
+  `target` is interpolated into a shell string and run with shell=True, so
+  "example.com; id" executes both. The second tool in the same file
+  (resolve_host) uses a list argv on the same subprocess.run sink and is not
+  exploitable — a scanner that reports the file rather than the tool cannot
+  tell them apart, which is itself worth measuring.

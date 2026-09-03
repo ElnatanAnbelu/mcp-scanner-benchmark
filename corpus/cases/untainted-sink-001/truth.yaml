@@ -1,0 +1,28 @@
+id: untainted-sink-001
+language: python
+verdict: safe
+class: null
+title: Dangerous sink reachable from a tool, but no argument reaches it
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: disk_report
+  parameter: mount
+  reachable: false
+
+proof:
+  tool: disk_report
+  args:
+    mount: '; echo MCPBENCH""_OK'
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: untainted-sink-001-tainted
+notes: >
+  A third reachability dimension. unreachable-sink-001 tests whether a scanner asks if
+  a sink can be reached at all; this asks whether attacker input reaches it. The shell
+  call is live and reachable, but the argument only selects a key and the value that
+  reaches the shell is a constant. Reachability analysis without taint flags this.

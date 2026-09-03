@@ -1,0 +1,27 @@
+id: authz-003-safe
+language: python
+verdict: safe
+class: null
+title: Same check, evaluated against the session role
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: read_setting
+  parameter: role
+  reachable: false
+
+proof:
+  tool: read_setting
+  args:
+    name: deploy_key
+    role: admin
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: authz-003
+notes: >
+  The role argument stays in the schema and is simply not what the gate reads, so the
+  two servers are indistinguishable from tool metadata alone.

@@ -1,0 +1,27 @@
+id: cmd-injection-002-js-safe
+language: javascript
+verdict: safe
+class: null
+title: Same child_process usage, validated hostname passed as argv (JavaScript)
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: run_diagnostic
+  parameter: target
+  reachable: false
+
+proof:
+  tool: run_diagnostic
+  args:
+    target: '; echo MCPBENCH""_OK'
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: cmd-injection-002-js
+notes: >
+  Still imports node:child_process and still runs ping on a tool argument, but through
+  execFile with an argv array after a hostname regex that admits no shell syntax. The
+  payload is refused with "illegal hostname". Flagging this is a false positive.

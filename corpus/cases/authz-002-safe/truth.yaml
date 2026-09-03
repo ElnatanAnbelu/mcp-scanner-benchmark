@@ -1,0 +1,26 @@
+id: authz-002-safe
+language: python
+verdict: safe
+class: null
+title: Same cross-tenant data, tenant argument checked against the session
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: list_tickets
+  parameter: tenant
+  reachable: false
+
+proof:
+  tool: list_tickets
+  args:
+    tenant: globex
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: authz-002
+notes: >
+  Identical data and signature; the tenant argument is compared with the session
+  tenant before use and refused when they differ.

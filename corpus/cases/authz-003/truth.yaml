@@ -1,0 +1,32 @@
+id: authz-003
+language: python
+verdict: vulnerable
+class: authz-session
+title: Privilege escalation — the caller states its own role
+
+sink:
+  file: server.py
+  line: 27
+  function: role
+  argument: role
+
+surfaces: [source, runtime]
+
+entry:
+  tool: read_setting
+  parameter: role
+  reachable: true
+
+proof:
+  tool: read_setting
+  args:
+    name: deploy_key
+    role: admin
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: authz-003-safe
+notes: >
+  The privilege check is real and correctly written; it just evaluates the role the
+  caller sent rather than the one the session authenticated as. A third authz flavour:
+  broken object-level access (authz-001), confused deputy (authz-002), and escalation.

@@ -1,0 +1,32 @@
+id: authz-002
+language: python
+verdict: vulnerable
+class: authz-session
+title: Confused deputy — caller names the tenant whose tickets to read
+
+sink:
+  file: server.py
+  line: 32
+  function: TICKETS.get
+  argument: tenant
+
+surfaces: [source, runtime]
+
+entry:
+  tool: list_tickets
+  parameter: tenant
+  reachable: true
+
+proof:
+  tool: list_tickets
+  args:
+    tenant: globex
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: authz-002-safe
+notes: >
+  The server holds a privileged cross-tenant view and acts on the tenant the caller
+  names, never checking it against the session. No shell, no filesystem, no network —
+  nothing a CWE-78/22/918 taint analysis is looking for. A second authz flavour after
+  authz-001 so the class result does not rest on a single case.

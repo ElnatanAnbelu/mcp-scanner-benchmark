@@ -1,0 +1,38 @@
+id: authz-001
+language: python
+verdict: vulnerable
+class: authz-session
+title: Broken object-level authorization — caller names the user whose data to read
+
+sink:
+  file: server.py
+  line: 32
+  function: REPORTS.get
+  argument: user
+
+surfaces: [source, runtime]
+
+entry:
+  tool: get_report
+  parameter: user
+  reachable: true
+
+proof:
+  tool: get_report
+  args:
+    user: dana
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: authz-001-safe
+notes: >
+  There is no dangerous sink in this file — no shell, no filesystem, no network, and
+  nothing a taint analysis targeting CWE-78/22/918 is looking for. The tool simply
+  reads whichever record the caller names, so the session user reads another user's
+  report by asking for it.
+
+  This is the class the benchmark exists to expose. Every scanner surveyed models
+  vulnerability as tainted-input-reaches-dangerous-function; a confused deputy has
+  no dangerous function, so the model cannot represent it. The expectation is that
+  every existing tool scores zero on this class — which is a finding, not a gap in
+  the corpus.

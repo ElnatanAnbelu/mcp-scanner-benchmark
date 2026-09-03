@@ -1,0 +1,29 @@
+id: cmd-injection-001-safe
+language: python
+verdict: safe
+class: null
+title: Same subprocess sink, reached only through hostname validation
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: run_diagnostic
+  parameter: target
+  reachable: false
+
+proof:
+  tool: run_diagnostic
+  args:
+    target: "; echo MCPBENCH\"\"_OK"
+  oracle: MCPBENCH_OK
+  expect: absent           # the same payload must not execute here
+
+pair: cmd-injection-001
+notes: >
+  subprocess.run is still here and still reachable from a tool, but the argument
+  passes through _validated_host (which rejects every shell metacharacter) and is
+  handed over as a list argv with shell=False. Flagging this is a false positive.
+  It is the direct precision test for cmd-injection-001: a scanner grepping for
+  "subprocess" flags both and scores 50% precision on the pair.

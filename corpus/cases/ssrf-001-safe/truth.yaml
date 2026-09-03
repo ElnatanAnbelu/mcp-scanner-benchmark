@@ -1,0 +1,28 @@
+id: ssrf-001-safe
+language: python
+verdict: safe
+class: null
+title: Same urlopen sink behind a scheme allowlist and a public-destination check
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: fetch_preview
+  parameter: url
+  reachable: false
+
+proof:
+  tool: fetch_preview
+  args:
+    url: "file://{case_dir}/SECRET.txt"
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: ssrf-001
+notes: >
+  urlopen on a tool argument is still here, but _public_url() rejects any scheme
+  outside http/https and resolves the host to refuse loopback, private, link-local
+  and reserved addresses — so both the file:// payload and the metadata-endpoint
+  class fail closed. Flagging this is a false positive.

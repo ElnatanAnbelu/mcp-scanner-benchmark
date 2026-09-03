@@ -1,0 +1,34 @@
+id: cmd-injection-002-js
+language: javascript
+verdict: vulnerable
+class: CWE-78
+title: Shell command injection via unvalidated tool argument (JavaScript)
+
+sink:
+  file: server.js
+  line: 22
+  function: execAsync
+  argument: cmd
+
+surfaces: [source, runtime]
+
+entry:
+  tool: run_diagnostic
+  parameter: target
+  reachable: true
+
+proof:
+  tool: run_diagnostic
+  args:
+    target: '; echo MCPBENCH""_OK'
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: cmd-injection-002-js-safe
+notes: >
+  The JavaScript twin of cmd-injection-001: child_process.exec on an interpolated
+  template string, the same defect in the language half the MCP ecosystem is written
+  in. The pair exists because language coverage turned out to be a real axis —
+  mcp-watch scores 1 finding on this defect in JS and 0 on the identical defect in
+  Python, which is a coverage gap rather than a detection failure and has to be
+  scored as one.

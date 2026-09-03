@@ -1,0 +1,30 @@
+id: untainted-sink-001-tainted
+language: python
+verdict: vulnerable
+class: CWE-78
+title: The same sink, one fallback away from tainted
+
+sink:
+  file: server.py
+  line: 29
+  function: subprocess.run
+  argument: path
+
+surfaces: [source, runtime]
+
+entry:
+  tool: disk_report
+  parameter: mount
+  reachable: true
+
+proof:
+  tool: disk_report
+  args:
+    mount: '; echo MCPBENCH""_OK'
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: untainted-sink-001
+notes: >
+  One word different from the safe twin: the dict lookup falls back to the caller's
+  string instead of refusing it, so the argument reaches the shell.
