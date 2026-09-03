@@ -307,6 +307,10 @@ class Ramparts(Adapter):
                 findings.append(Finding(case_dir.name, f"{bucket}: {str(issue)[:120]}",
                                         raw=issue if isinstance(issue, dict) else {"issue": issue}))
         for hit in result.get("yara_results") or []:
+            # YARA_PRE_SCAN_SUMMARY is ramparts reporting that it ran, not a detection.
+            # Counting it would inflate any scan that produced other hits alongside it.
+            if str(hit.get("rule_name", "")) == "YARA_PRE_SCAN_SUMMARY":
+                continue
             if isinstance(hit, dict) and str(hit.get("status", "")).lower() in ("warning", "fail", "error"):
                 findings.append(Finding(
                     case_dir.name,

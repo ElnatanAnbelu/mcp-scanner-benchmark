@@ -15,8 +15,8 @@ The table above is generated from `harness/results-latest.json` by
 
 Every case has a safe twin: nearly the same file, with the vulnerability fixed. A scanner that
 gives both the same verdict has not detected anything, and recall will not tell you that
-happened. MCTS reports 69% recall and gives the vulnerable file and its fix the same verdict in
-12 of 13 pairs.
+happened. MCTS reports 71% recall and gives the vulnerable file and its fix the same verdict in
+13 of 14 pairs.
 
 Here is one pair. The two files differ in exactly one line of code.
 
@@ -53,14 +53,14 @@ Three other things fell out of running this:
 All of it reproduces with `python3 harness/run.py`. Details below, method and limitations in
 [METHODOLOGY.md](METHODOLOGY.md).
 
-Scope: five tools, 26 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
+Scope: five tools, 28 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
 agent-scan, Proximity and pipelock are missing, and they are missing because of install cost or
 account requirements, not because of anything they scored. Adding a scanner is a small pull
 request.
 
 ## Status
 
-26 cases in 13 pairs, every label executed and verified. Six adapter configurations over five
+28 cases in 14 pairs, every label executed and verified. Six adapter configurations over five
 tools. Four produced scores: one tool is broken upstream, and one Cisco mode wants a paid API
 key.
 
@@ -109,7 +109,7 @@ ok    authz-001-safe
 ...
 ok    untainted-sink-001-tainted
 
-26/26 cases verified, 373 checks
+28/28 cases verified, 400 checks
 ```
 
 A proof also has to be honest about why it passed, which I learned the hard way. A tool that
@@ -124,14 +124,14 @@ with no sink or a safe case declaring a CWE class.
 
 ## Results
 
-Six adapters over five tools, 26 cases. Reproduce with `python3 harness/run.py`. Every number
+Six adapters over five tools, 28 cases. Reproduce with `python3 harness/run.py`. Every number
 names the version it came from.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|---------------------|
-| `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | 2/2 |
-| `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | 2/2 |
-| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 9 | 8 | 5 | 4 | 53% | 69% | 1/13 |
+| `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
+| `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
+| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 10 | 9 | 5 | 4 | 53% | 71% | 1/14 |
 | `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | 0/4 |
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
@@ -156,14 +156,24 @@ exposed tool can reach the dangerous sink, and the same 4 on the twin where it i
 `authz-001` it reports `Handler egress to HTTP client: get_report`, in a file with no network
 code in it. It misses path traversal in both twins.
 
-The two metadata scanners discriminate every pair they are scored on, decoys included. The
-decoys are the safe twins I stuffed with audit and compliance and credential vocabulary to catch
-keyword matching, so that is a real pass.
+The two metadata scanners tell apart two of the three pairs they are scored on, and which one
+they miss is the interesting part.
 
-It is also two pairs each, and worth saying plainly. They read live tool metadata, so the
-tool-poisoning pairs are the only ones in this corpus they can see. The other eleven get
-skipped. 2/2 and 1/13 are not the same achievement: one is a narrow surface handled cleanly, the
-other is broad coverage that mostly cannot discriminate.
+They pass the vocabulary decoys. `tool-poisoning-001-safe` is stuffed with audit, compliance and
+credential language while instructing the client to do nothing, and neither scanner flags it.
+They fail `tool-poisoning-003-safe`, whose description says the tool *never* reads
+`~/.ssh/id_rsa`. That sentence is true, instructs nothing, and both scanners flag it anyway.
+
+ramparts' finding on the poisoned twin is a YARA rule named `SSHKeyExposure`, which matches the
+path rather than the instruction, so the third pair exists to test that rule against a mention it
+should ignore. Cisco reports `CREDENTIAL HARVESTING` and `PROMPT INJECTION` and fails the same
+case. Both distinguish an instruction from security vocabulary; neither distinguishes it from a
+benign mention of the file the instruction names.
+
+Scale matters too. They read live tool metadata, so the tool-poisoning pairs are the only ones in
+this corpus they can see and the other eleven get skipped. 2 of 3 and 1 of 14 are not the same
+achievement: one is a narrow surface mostly handled, the other is broad coverage that almost
+never discriminates.
 
 ### It is not a Python artifact
 

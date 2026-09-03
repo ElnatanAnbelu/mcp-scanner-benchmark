@@ -47,6 +47,9 @@ def font(names: tuple[str, ...], size: int, bold: bool = False) -> ImageFont.Fre
 def load_rows() -> list[tuple[str, str, str, str, bool]]:
     """(name, recall, pairs, note, is_failure) straight from the results file."""
     data = json.loads(RESULTS.read_text(encoding="utf-8"))
+    # The widest coverage in this run sets the bar. An adapter scored on far fewer pairs
+    # gets its surface named, so a narrow 2 of 3 cannot read as beating a broad 1 of 14.
+    widest = max((a.get("pairs_scored") or 0) for a in data.get("adapters", [])) or 1
     rows = []
     for a in data.get("adapters", []):
         counts = a.get("counts")
@@ -63,7 +66,7 @@ def load_rows() -> list[tuple[str, str, str, str, bool]]:
         # from reading as a win over 1 of 13, which covers a far wider surface.
         note = ""
         surfaces = a.get("surfaces") or []
-        if scored <= 2 and surfaces:
+        if surfaces and scored * 2 < widest:
             note = f"{'/'.join(surfaces)} only"
         rows.append((a["adapter"],
                      f"{recall * 100:.0f}%" if recall is not None else "-",

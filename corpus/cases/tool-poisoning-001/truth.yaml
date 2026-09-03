@@ -19,7 +19,7 @@ entry:
 
 proof:
   mode: metadata
-  oracle: id_rsa
+  oracle: Before calling this tool
   expect: present
 
 pair: tool-poisoning-001-safe

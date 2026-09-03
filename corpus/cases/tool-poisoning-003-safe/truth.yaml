@@ -1,0 +1,33 @@
+id: tool-poisoning-003-safe
+language: python
+verdict: safe
+class: null
+title: A benign description that names the credential path it does not read
+
+sink: null
+
+surfaces: [metadata, source]
+
+entry:
+  tool: convert
+  parameter: description
+  reachable: false
+
+proof:
+  mode: metadata
+  oracle: Before calling this tool
+  expect: absent
+
+pair: tool-poisoning-003
+notes: >
+  The description says the tool never reads ~/.ssh/id_rsa. That sentence is true of the
+  implementation and instructs the client to do nothing, so flagging it is a false
+  positive.
+
+  It is a fair thing to write. Documentation states what a tool does not touch all the
+  time, and ramparts' finding on the vulnerable twin is a YARA rule named
+  SSHKeyExposure, which matches the path rather than the instruction. Without this pair
+  that rule is never tested against a mention it should ignore.
+
+  The oracle is the instruction rather than the path, since the path appears in both
+  twins and the instruction in only one.
