@@ -14,15 +14,16 @@ for f in PLAN.md .env config.yaml; do
   fi
 done
 
-# Names and identifiers that belong to the private workspace, not to this repository.
-# The author's name is expected in LICENSE and nowhere else.
-if git grep -n -I -i -E 'addis market|nexel|trojans\.dsu|@gmail\.com' -- . >/dev/null 2>&1; then
-  echo "FAIL private identifiers in tracked files:"
-  git grep -n -I -i -E 'addis market|nexel|trojans\.dsu|@gmail\.com' -- .
-  status=1
+# Identifiers belonging to the private workspace rather than to this repository.
+# This script is excluded because it necessarily contains the patterns it looks for,
+# which is how its first run failed.
+mine=":(exclude)tools/check-publishable.sh"
+private=$(git grep -n -I -i -E 'addis market|nexel|trojans\.dsu|@gmail\.com' -- . "$mine" || true)
+if [ -n "$private" ]; then
+  echo "FAIL private identifiers in tracked files:"; echo "$private"; status=1
 fi
 
-leaks=$(git grep -n -I -E '(api[_-]?key|secret)[[:space:]]*[:=][[:space:]]*["'"'"'][A-Za-z0-9_-]{16,}' -- . || true)
+leaks=$(git grep -n -I -E '(api[_-]?key|secret)[[:space:]]*[:=][[:space:]]*["'"'"'][A-Za-z0-9_-]{16,}' -- . "$mine" || true)
 if [ -n "$leaks" ]; then
   echo "FAIL possible credential in tracked files:"; echo "$leaks"; status=1
 fi
