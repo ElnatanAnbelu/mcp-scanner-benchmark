@@ -186,3 +186,11 @@ def test_findings_keep_their_raw_payload_in_the_result():
 
     result = run.score(RawAdapter(), [case("v", "vulnerable", "s")])
     assert result["rows"][0]["raw"] == [{"rule": "X", "line": 7}]
+
+
+def test_raw_output_has_the_local_path_redacted():
+    """Scanners report absolute paths; publishing them leaks a home directory."""
+    root = str(adapters.REPO)
+    assert run.redact(f"{root}/corpus/cases/x/server.py") == "<repo>/corpus/cases/x/server.py"
+    assert run.redact({"file": f"{root}/a", "n": [f"{root}/b", 3]}) == {
+        "file": "<repo>/a", "n": ["<repo>/b", 3]}

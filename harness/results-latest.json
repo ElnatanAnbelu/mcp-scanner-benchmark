@@ -1,6 +1,6 @@
 {
   "cases": 28,
-  "generated_at": "2026-09-02T22:25:21.324109-05:00",
+  "generated_at": "2026-09-02T22:34:29.211260-05:00",
   "platform": "Darwin 25.6.0 arm64",
   "python": "3.14.5",
   "adapters": [
@@ -148,7 +148,7 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 2.27,
+          "seconds": 2.39,
           "detail": [
             "convert: 2 finding(s)"
           ],
@@ -195,7 +195,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 2.03,
+          "seconds": 2.1,
           "detail": [],
           "raw": []
         },
@@ -203,7 +203,7 @@
           "case": "tool-poisoning-002-js",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.7,
+          "seconds": 1.79,
           "detail": [
             "convert: 2 finding(s)"
           ],
@@ -250,7 +250,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.69,
+          "seconds": 1.86,
           "detail": [],
           "raw": []
         },
@@ -258,7 +258,7 @@
           "case": "tool-poisoning-003",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 2.16,
+          "seconds": 2.18,
           "detail": [
             "convert: 2 finding(s)"
           ],
@@ -305,7 +305,7 @@
           "case": "tool-poisoning-003-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 2.04,
+          "seconds": 2.09,
           "detail": [
             "convert: 1 finding(s)"
           ],
@@ -529,7 +529,7 @@
           "case": "cmd-injection-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.04,
+          "seconds": 0.03,
           "detail": [],
           "raw": []
         },
@@ -869,7 +869,7 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 0.66,
+          "seconds": 0.65,
           "detail": [
             "yara: SSHKeyExposure"
           ],
@@ -945,7 +945,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.32,
+          "seconds": 0.35,
           "detail": [],
           "raw": []
         },
@@ -987,7 +987,7 @@
           "case": "tool-poisoning-003-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.61,
+          "seconds": 0.62,
           "detail": [
             "yara: SSHKeyExposure"
           ],
@@ -1214,7 +1214,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-20131",
+              "id": "net-net-01-4430",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: get_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -1605,7 +1605,7 @@
           "case": "authz-001-safe",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.9,
+          "seconds": 0.91,
           "detail": [
             "Handler egress to HTTP client: get_report",
             "Untrusted input may reach sink on get_report",
@@ -1614,7 +1614,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-63382",
+              "id": "net-net-01-64292",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: get_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -2005,7 +2005,7 @@
           "case": "authz-002",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.83,
+          "seconds": 0.9,
           "detail": [
             "Handler egress to HTTP client: list_tickets",
             "Untrusted input may reach sink on list_tickets",
@@ -2014,7 +2014,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-33630",
+              "id": "net-net-01-20210",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: list_tickets",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -2405,7 +2405,7 @@
           "case": "authz-002-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.82,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -2423,7 +2423,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-32753",
+              "id": "net-net-01-18569",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: read_setting",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -2865,7 +2865,7 @@
           "case": "authz-003-safe",
           "outcome": "fp",
           "findings": 6,
-          "seconds": 0.91,
+          "seconds": 0.83,
           "detail": [
             "Handler egress to HTTP client: read_setting",
             "Sigma rule match on tool:read_setting: MCP Tool Shadowing Attack Detection (MCTS-T-1008)",
@@ -2875,7 +2875,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-44497",
+              "id": "net-net-01-16283",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: read_setting",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -3368,7 +3368,7 @@
           "case": "authz-004-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.76,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -3376,7 +3376,7 @@
           "case": "authz-004-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.89,
+          "seconds": 0.84,
           "detail": [],
           "raw": []
         },
@@ -3384,7 +3384,7 @@
           "case": "cmd-injection-001",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.89,
+          "seconds": 0.91,
           "detail": [
             "Command execution in run_diagnostic: subprocess invocation",
             "Command execution in resolve_host: subprocess invocation",
@@ -3616,7 +3616,7 @@
               "description": "Attack graph matched template SSRF_EXFIL.",
               "severity": "critical",
               "recommendation": "disable_network_egress; add_url_policy",
-              "tool": "run_diagnostic",
+              "tool": "resolve_host",
               "evidence": {
                 "template_id": "SSRF_EXFIL",
                 "path_proven": true,
@@ -3626,38 +3626,6 @@
                 "trust_boundary_crossings": 1,
                 "exploit_cost": 2,
                 "paths": [
-                  {
-                    "nodes": [
-                      "tool:run_diagnostic",
-                      "sink:external_network",
-                      "sink:model_context"
-                    ],
-                    "edges": [
-                      "edge-egress-run_diagnostic",
-                      "edge-61ab41487388"
-                    ],
-                    "hop_count": 2,
-                    "tools_on_path": [
-                      "run_diagnostic"
-                    ],
-                    "chain_confidence": 0.922,
-                    "path_reachability": 1.0,
-                    "chain_risk_score": 5.071,
-                    "explanation": [
-                      {
-                        "message": "Tool performs outbound network access with user-influenced URL.",
-                        "derived_from": [
-                          "template:SSRF_EXFIL"
-                        ]
-                      },
-                      {
-                        "message": "Tool result is delivered automatically to model context.",
-                        "derived_from": [
-                          "template:SSRF_EXFIL"
-                        ]
-                      }
-                    ]
-                  },
                   {
                     "nodes": [
                       "tool:resolve_host",
@@ -3689,13 +3657,45 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "nodes": [
+                      "tool:run_diagnostic",
+                      "sink:external_network",
+                      "sink:model_context"
+                    ],
+                    "edges": [
+                      "edge-egress-run_diagnostic",
+                      "edge-61ab41487388"
+                    ],
+                    "hop_count": 2,
+                    "tools_on_path": [
+                      "run_diagnostic"
+                    ],
+                    "chain_confidence": 0.922,
+                    "path_reachability": 1.0,
+                    "chain_risk_score": 5.071,
+                    "explanation": [
+                      {
+                        "message": "Tool performs outbound network access with user-influenced URL.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      },
+                      {
+                        "message": "Tool result is delivered automatically to model context.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      }
+                    ]
                   }
                 ],
                 "finding_class": "security",
                 "counterfactual_remediation": {
                   "triggered_by": [
-                    "SSRF_EXFIL: Remove or block outbound network tools and httpx/fetch sinks (run_diagnostic)",
-                    "SSRF_EXFIL: Enforce URL allowlist and block RFC1918/metadata hosts (run_diagnostic)"
+                    "SSRF_EXFIL: Remove or block outbound network tools and httpx/fetch sinks (resolve_host)",
+                    "SSRF_EXFIL: Enforce URL allowlist and block RFC1918/metadata hosts (resolve_host)"
                   ],
                   "removing_any_one_eliminates_finding": true,
                   "actions": [
@@ -3756,7 +3756,7 @@
                 "confidence": 0.7,
                 "analysis_mode": "static_heuristic",
                 "path": [
-                  "tool:run_diagnostic",
+                  "tool:resolve_host",
                   "sink:external_network",
                   "sink:model_context"
                 ],
@@ -4250,7 +4250,7 @@
           "case": "cmd-injection-002-js-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.76,
+          "seconds": 0.9,
           "detail": [
             "Security-sensitive operations in run_diagnostic"
           ],
@@ -4312,7 +4312,7 @@
           "case": "path-traversal-001",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.82,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -4320,7 +4320,7 @@
           "case": "path-traversal-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.9,
+          "seconds": 0.83,
           "detail": [],
           "raw": []
         },
@@ -4344,7 +4344,7 @@
           "case": "ssrf-001",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.9,
+          "seconds": 0.83,
           "detail": [
             "Handler egress to HTTP client: fetch_preview",
             "Untrusted input may reach sink on fetch_preview",
@@ -4354,7 +4354,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-20561",
+              "id": "net-net-01-13958",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: fetch_preview",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -4801,7 +4801,7 @@
           "case": "ssrf-001-safe",
           "outcome": "fp",
           "findings": 5,
-          "seconds": 0.89,
+          "seconds": 0.82,
           "detail": [
             "Handler egress to HTTP client: fetch_preview",
             "Untrusted input may reach sink on fetch_preview",
@@ -4811,7 +4811,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-49029",
+              "id": "net-net-01-53910",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: fetch_preview",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -5259,7 +5259,7 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 3,
-          "seconds": 0.84,
+          "seconds": 0.9,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request",
             "Tool shadowing pattern on convert",
@@ -5413,7 +5413,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.9,
+          "seconds": 0.83,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request"
           ],
@@ -5472,7 +5472,7 @@
           "case": "tool-poisoning-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.91,
+          "seconds": 0.83,
           "detail": [],
           "raw": []
         },
@@ -5480,7 +5480,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.84,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -5642,7 +5642,7 @@
           "case": "tool-poisoning-003-safe",
           "outcome": "fp",
           "findings": 2,
-          "seconds": 0.9,
+          "seconds": 0.89,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request",
             "High-risk injection surface on tool:convert"
@@ -5765,7 +5765,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-46822",
+              "id": "net-net-01-15932",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: build_status",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -5820,7 +5820,7 @@
               "rule_stability": "mature"
             },
             {
-              "id": "net-net-01-52445",
+              "id": "net-net-01-41265",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: refresh_cache",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -6210,7 +6210,7 @@
           "case": "unreachable-sink-001-reachable",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.83,
+          "seconds": 0.89,
           "detail": [
             "Handler egress to HTTP client: build_status",
             "Untrusted input may reach sink on build_status",
@@ -6220,7 +6220,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-7169",
+              "id": "net-net-01-375",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: build_status",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -6581,7 +6581,7 @@
           "case": "untainted-sink-001",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.89,
+          "seconds": 0.91,
           "detail": [
             "Command execution in disk_report: subprocess invocation",
             "Handler egress to HTTP client: disk_report",
@@ -6641,7 +6641,7 @@
               "rule_stability": "mature"
             },
             {
-              "id": "net-net-01-8262",
+              "id": "net-net-01-18251",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: disk_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -6894,7 +6894,7 @@
           "case": "untainted-sink-001-tainted",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.9,
+          "seconds": 0.82,
           "detail": [
             "Command execution in disk_report: subprocess invocation",
             "Handler egress to HTTP client: disk_report",
@@ -6954,7 +6954,7 @@
               "rule_stability": "mature"
             },
             {
-              "id": "net-net-01-46942",
+              "id": "net-net-01-16085",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: disk_report",
               "description": "Tool handler or module reaches an HTTP client sink.",

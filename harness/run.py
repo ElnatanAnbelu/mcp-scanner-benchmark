@@ -43,6 +43,23 @@ def load_cases(only: list[str]) -> list[dict]:
     return cases
 
 
+def redact(value, root: str = str(adapters.REPO)):
+    """Replace this checkout's absolute path with a placeholder, recursively.
+
+    Scanners report the files they scanned by absolute path, so raw output carries the
+    home directory and workspace layout of whoever ran it. That is nobody else's
+    business and it is published, so it comes out on the way into the results file
+    rather than being remembered about later.
+    """
+    if isinstance(value, str):
+        return value.replace(root, "<repo>")
+    if isinstance(value, dict):
+        return {k: redact(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [redact(v) for v in value]
+    return value
+
+
 def score(adapter: adapters.Adapter, cases: list[dict]) -> dict:
     rows, counts = [], {"tp": 0, "fp": 0, "tn": 0, "fn": 0, "skipped": 0, "errors": 0}
     per_class: dict[str, dict[str, int]] = {}
@@ -76,7 +93,7 @@ def score(adapter: adapters.Adapter, cases: list[dict]) -> dict:
         rows.append({"case": case_id, "outcome": outcome, "findings": len(result.findings),
                      "seconds": round(result.seconds, 2),
                      "detail": [f.detail for f in result.findings][:5],
-                     "raw": [f.raw for f in result.findings]})
+                     "raw": redact([f.raw for f in result.findings])})
 
     # Pair discrimination: the metric raw counts hide.
     #
