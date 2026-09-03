@@ -8,8 +8,8 @@ Twelve-plus MCP scanners exist. Nobody can say which one works.
 ## Status
 
 Corpus v0: **22 cases across 11 pairs**, every label executed and verified. Harness running
-against **five scanners**. See [PLAN.md](PLAN.md) for scope and reasoning, and
-[First results](#first-results) for what it measured.
+against **five scanners** — see [First results](#first-results) for what it measured, and
+[METHODOLOGY.md](METHODOLOGY.md) for how, and for where it can be wrong.
 
 | Pair | Class | Tests |
 |------|-------|-------|
@@ -60,16 +60,21 @@ resolving both ways) and rejects contradictory labels — a `vulnerable` case wi
 
 ## First results
 
-Five scanners, 22 cases. Every number below is reproducible with `python3 harness/run.py`.
+Five scanners, 22 cases. Every number below is reproducible with `python3 harness/run.py`,
+and every claim names the version it was measured against.
 
-| Adapter | Surface | Languages | tp | fp | tn | fn | Precision | Recall | **Pairs discriminated** |
-|---------|---------|-----------|----|----|----|----|-----------|--------|-------------------------|
-| `ramparts/scan-config` | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
-| `cisco-mcp-scanner/stdio+yara` | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
-| `mcts/scan` | source | Python, JS/TS | 9 | 8 | 3 | 2 | 53% | 82% | **1/11** |
-| `mcp-watch/scan-local` | source | JS/TS only | 0 | 0 | 2 | 2 | n/a | 0% | **0/2** |
-| `mcpwn/live` | runtime | any | — | — | — | — | — | — | crashes on every case |
-| `cisco-mcp-scanner/behavioural` | source | — | — | — | — | — | — | — | unavailable (paid key) |
+| Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | **Pairs discriminated** |
+|---------|---------|---------|-----------|----|----|----|----|-----------|--------|-------------------------|
+| `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
+| `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 2 | 0 | 2 | 0 | 100% | 100% | **2/2** |
+| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 9 | 8 | 3 | 2 | 53% | 82% | **1/11** |
+| `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 0 | 0 | 2 | 2 | n/a | 0% | **0/2** |
+| `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | — | — | — | — | — | — | crashes on every case |
+| `cisco-mcp-scanner/behavioural` | 4.8.4 | source | — | — | — | — | — | — | — | unavailable (paid key) |
+
+Run on Darwin 25.6.0 arm64, Python 3.14.5. Versions, platform and timestamp are recorded in
+[`harness/results-latest.json`](harness/results-latest.json) with every scanner's raw output,
+so any row here can be audited back to what the tool actually said.
 
 ### Pair discrimination is the number that matters
 

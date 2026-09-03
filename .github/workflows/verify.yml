@@ -1,0 +1,32 @@
+name: verify
+
+# The corpus is the product. If a label stops being demonstrable, every number this
+# project publishes is suspect, so ground truth is re-executed on every push.
+on:
+  push:
+  pull_request:
+
+jobs:
+  corpus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+          npm install --no-fund --no-audit
+
+      - name: Every label must be demonstrable
+        run: python corpus/verify.py
+
+      - name: The scorer must be correct
+        run: python -m pytest tests -q

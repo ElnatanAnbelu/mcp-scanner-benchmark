@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -61,6 +62,15 @@ class Adapter:
     def scan(self, case_dir: Path) -> ScanResult:
         raise NotImplementedError
 
+    def resolve_version(self) -> str:
+        """What this tool reports about itself, recorded with every result.
+
+        A benchmark that says "this tool crashes" without naming the version is not a
+        claim anyone can check, and it is the first thing a maintainer asks. Subclasses
+        override; the default reports nothing rather than guessing.
+        """
+        return ""
+
     def covers(self, case_surfaces: list[str], language: str = "") -> str:
         """"" when this adapter can score the case, else why it cannot.
 
@@ -93,6 +103,10 @@ class CiscoStdioYara(Adapter):
 
     def available(self) -> bool:
         return Path(self.binary).is_file() and VENV_PYTHON.is_file()
+
+    def resolve_version(self) -> str:
+        return _run_version([str(VENV_PYTHON), "-c", "import importlib.metadata as m;"
+                             "print(m.version('cisco-ai-mcp-scanner'))"])
 
     def scan(self, case_dir: Path) -> ScanResult:
         import time
@@ -153,6 +167,10 @@ class CiscoBehavioural(Adapter):
     def available(self) -> bool:
         return bool(os.environ.get("MCP_SCANNER_LLM_API_KEY"))
 
+    def resolve_version(self) -> str:
+        return _run_version([str(VENV_PYTHON), "-c", "import importlib.metadata as m;"
+                             "print(m.version('cisco-ai-mcp-scanner'))"])
+
     def scan(self, case_dir: Path) -> ScanResult:
         return ScanResult(self.name, case_dir.name, [], ran=False, error="no LLM API key")
 
@@ -178,6 +196,9 @@ class McpWatchLocal(Adapter):
 
     def available(self) -> bool:
         return self.binary.is_file()
+
+    def resolve_version(self) -> str:
+        return _run_version([str(self.binary), "--version"])
 
     def scan(self, case_dir: Path) -> ScanResult:
         import time
@@ -236,6 +257,11 @@ class Ramparts(Adapter):
 
     def available(self) -> bool:
         return bool(self.binary) and self.rules.is_dir()
+
+    def resolve_version(self) -> str:
+        rules = _pinned_source(self.rules) or _git_commit(self.rules)
+        version = _run_version([self.binary, "--version"]) if self.binary else ""
+        return f"{version} (rules @ {rules})" if rules else version
 
     def scan(self, case_dir: Path) -> ScanResult:
         import tempfile
@@ -313,6 +339,9 @@ class Mcts(Adapter):
     def available(self) -> bool:
         return Path(self.binary).is_file()
 
+    def resolve_version(self) -> str:
+        return _run_version([self.binary, "--version"])
+
     def scan(self, case_dir: Path) -> ScanResult:
         import tempfile
         import time
@@ -378,6 +407,11 @@ class Mcpwn(Adapter):
     def available(self) -> bool:
         return self.entry.is_file()
 
+    def resolve_version(self) -> str:
+        commit = _git_commit(self.entry.parent)
+        version = _run_version([str(VENV_PYTHON), str(self.entry), "--version"])
+        return f"{version} @ {commit}" if commit else version
+
     def scan(self, case_dir: Path) -> ScanResult:
         import tempfile
         import time
@@ -421,6 +455,43 @@ class Mcpwn(Adapter):
             for f in (items or []) if isinstance(f, dict)
         ]
         return ScanResult(self.name, case_dir.name, findings, seconds=seconds)
+
+
+def _run_version(cmd: list[str], pattern: str = r"[0-9]+\.[0-9]+(?:\.[0-9]+)?") -> str:
+    """First version-looking token from a --version invocation, or ""."""
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    m = re.search(pattern, (proc.stdout or "") + (proc.stderr or ""))
+    return m.group(0) if m else ""
+
+
+def _git_commit(repo: Path) -> str:
+    """Short commit of a vendored *checkout*, or "".
+
+    Guarded against the trap this hit once: a copied tree has no .git of its own, so
+    `git rev-parse` walks up and answers with the enclosing repository's commit — which
+    would have published this benchmark's own hash as the scanner's version.
+    """
+    repo = Path(repo)
+    if not (repo / ".git").exists():
+        return ""
+    try:
+        proc = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"],
+                              capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return proc.stdout.strip() if proc.returncode == 0 else ""
+
+
+def _pinned_source(path: Path) -> str:
+    """Upstream commit recorded by a setup script when it vendored files by copy."""
+    stamp = Path(path) / ".source-commit"
+    try:
+        return stamp.read_text(encoding="utf-8").strip()[:12]
+    except OSError:
+        return ""
 
 
 def _server_and_runner(case_dir: Path) -> tuple[Path | None, str]:

@@ -1,10 +1,19 @@
 {
   "cases": 22,
+  "generated_at": "2026-09-02T20:14:29.887753-05:00",
+  "platform": "Darwin 25.6.0 arm64",
+  "python": "3.14.5",
   "adapters": [
     {
       "adapter": "cisco-mcp-scanner/stdio+yara",
+      "version": "4.8.4",
       "surfaces": [
         "metadata"
+      ],
+      "languages": [
+        "python",
+        "javascript",
+        "typescript"
       ],
       "counts": {
         "tp": 2,
@@ -112,7 +121,7 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 2.67,
+          "seconds": 2.26,
           "detail": [
             "convert: 2 finding(s)"
           ]
@@ -121,14 +130,14 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 2.1,
+          "seconds": 2.0,
           "detail": []
         },
         {
           "case": "tool-poisoning-002-js",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.86,
+          "seconds": 1.73,
           "detail": [
             "convert: 2 finding(s)"
           ]
@@ -137,7 +146,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.98,
+          "seconds": 1.76,
           "detail": []
         },
         {
@@ -180,12 +189,18 @@
     },
     {
       "adapter": "cisco-mcp-scanner/behavioural",
+      "version": "4.8.4",
       "unavailable": "MCP_SCANNER_LLM_API_KEY (or AWS Bedrock credentials)"
     },
     {
       "adapter": "mcp-watch/scan-local",
+      "version": "2.0.0",
       "surfaces": [
         "source"
+      ],
+      "languages": [
+        "javascript",
+        "typescript"
       ],
       "counts": {
         "tp": 0,
@@ -269,7 +284,7 @@
           "case": "cmd-injection-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.05,
+          "seconds": 0.04,
           "detail": []
         },
         {
@@ -363,8 +378,14 @@
     },
     {
       "adapter": "ramparts/scan-config",
+      "version": "0.8.8 (rules @ 70457db)",
       "surfaces": [
         "metadata"
+      ],
+      "languages": [
+        "python",
+        "javascript",
+        "typescript"
       ],
       "counts": {
         "tp": 2,
@@ -472,7 +493,7 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 2,
-          "seconds": 0.84,
+          "seconds": 0.65,
           "detail": [
             "yara: SSHKeyExposure",
             "yara: YARA_PRE_SCAN_SUMMARY"
@@ -482,14 +503,14 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.78,
+          "seconds": 0.61,
           "detail": []
         },
         {
           "case": "tool-poisoning-002-js",
           "outcome": "tp",
           "findings": 2,
-          "seconds": 0.39,
+          "seconds": 0.33,
           "detail": [
             "yara: SSHKeyExposure",
             "yara: YARA_PRE_SCAN_SUMMARY"
@@ -499,7 +520,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.39,
+          "seconds": 0.32,
           "detail": []
         },
         {
@@ -542,8 +563,14 @@
     },
     {
       "adapter": "mcts/scan",
+      "version": "0.1.4",
       "surfaces": [
         "source"
+      ],
+      "languages": [
+        "python",
+        "javascript",
+        "typescript"
       ],
       "counts": {
         "tp": 9,
@@ -659,7 +686,7 @@
           "case": "authz-001",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 1.0,
+          "seconds": 0.72,
           "detail": [
             "Handler egress to HTTP client: get_report",
             "Untrusted input may reach sink on get_report",
@@ -671,7 +698,7 @@
           "case": "authz-001-safe",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.94,
+          "seconds": 0.77,
           "detail": [
             "Handler egress to HTTP client: get_report",
             "Untrusted input may reach sink on get_report",
@@ -683,7 +710,7 @@
           "case": "authz-002",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.95,
+          "seconds": 0.7,
           "detail": [
             "Handler egress to HTTP client: list_tickets",
             "Untrusted input may reach sink on list_tickets",
@@ -695,14 +722,14 @@
           "case": "authz-002-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.89,
+          "seconds": 0.7,
           "detail": []
         },
         {
           "case": "authz-003",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.97,
+          "seconds": 0.77,
           "detail": [
             "Handler egress to HTTP client: read_setting",
             "Sigma rule match on tool:read_setting: MCP Tool Shadowing Attack Detection (MCTS-T-1008)",
@@ -715,7 +742,7 @@
           "case": "authz-003-safe",
           "outcome": "fp",
           "findings": 6,
-          "seconds": 1.03,
+          "seconds": 0.78,
           "detail": [
             "Handler egress to HTTP client: read_setting",
             "Sigma rule match on tool:read_setting: MCP Tool Shadowing Attack Detection (MCTS-T-1008)",
@@ -728,7 +755,7 @@
           "case": "cmd-injection-001",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 1.0,
+          "seconds": 0.77,
           "detail": [
             "Command execution in run_diagnostic: subprocess invocation",
             "Command execution in resolve_host: subprocess invocation",
@@ -741,7 +768,7 @@
           "case": "cmd-injection-001-safe",
           "outcome": "fp",
           "findings": 5,
-          "seconds": 1.11,
+          "seconds": 0.71,
           "detail": [
             "Command execution in run_diagnostic: subprocess invocation",
             "Command execution in resolve_host: subprocess invocation",
@@ -754,7 +781,7 @@
           "case": "cmd-injection-002-js",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 0.99,
+          "seconds": 0.72,
           "detail": [
             "Security-sensitive operations in run_diagnostic"
           ]
@@ -763,7 +790,7 @@
           "case": "cmd-injection-002-js-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.98,
+          "seconds": 0.78,
           "detail": [
             "Security-sensitive operations in run_diagnostic"
           ]
@@ -772,21 +799,21 @@
           "case": "path-traversal-001",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.96,
+          "seconds": 0.7,
           "detail": []
         },
         {
           "case": "path-traversal-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.91,
+          "seconds": 0.77,
           "detail": []
         },
         {
           "case": "ssrf-001",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.95,
+          "seconds": 0.69,
           "detail": [
             "Handler egress to HTTP client: fetch_preview",
             "Untrusted input may reach sink on fetch_preview",
@@ -799,7 +826,7 @@
           "case": "ssrf-001-safe",
           "outcome": "fp",
           "findings": 5,
-          "seconds": 0.94,
+          "seconds": 0.77,
           "detail": [
             "Handler egress to HTTP client: fetch_preview",
             "Untrusted input may reach sink on fetch_preview",
@@ -812,7 +839,7 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 3,
-          "seconds": 0.96,
+          "seconds": 0.71,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request",
             "Tool shadowing pattern on convert",
@@ -823,7 +850,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.95,
+          "seconds": 0.7,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request"
           ]
@@ -832,21 +859,21 @@
           "case": "tool-poisoning-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.94,
+          "seconds": 0.71,
           "detail": []
         },
         {
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.97,
+          "seconds": 0.78,
           "detail": []
         },
         {
           "case": "unreachable-sink-001",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.94,
+          "seconds": 0.71,
           "detail": [
             "Handler egress to HTTP client: build_status",
             "Untrusted input may reach sink on build_status",
@@ -858,7 +885,7 @@
           "case": "unreachable-sink-001-reachable",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.93,
+          "seconds": 0.78,
           "detail": [
             "Handler egress to HTTP client: build_status",
             "Untrusted input may reach sink on build_status",
@@ -870,7 +897,7 @@
           "case": "untainted-sink-001",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.92,
+          "seconds": 0.7,
           "detail": [
             "Command execution in disk_report: subprocess invocation",
             "Handler egress to HTTP client: disk_report",
@@ -882,7 +909,7 @@
           "case": "untainted-sink-001-tainted",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.94,
+          "seconds": 0.85,
           "detail": [
             "Command execution in disk_report: subprocess invocation",
             "Handler egress to HTTP client: disk_report",
@@ -964,8 +991,14 @@
     },
     {
       "adapter": "mcpwn/live",
+      "version": "1.0 @ 6e9e8fc",
       "surfaces": [
         "runtime"
+      ],
+      "languages": [
+        "python",
+        "javascript",
+        "typescript"
       ],
       "counts": {
         "tp": 0,

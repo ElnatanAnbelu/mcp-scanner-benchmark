@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import sys
+from datetime import datetime
 from dataclasses import asdict
 from pathlib import Path
 
@@ -100,7 +102,8 @@ def score(adapter: adapters.Adapter, cases: list[dict]) -> dict:
     recall = tp / (tp + fn) if tp + fn else None
     f1 = (2 * precision * recall / (precision + recall)
           if precision and recall and (precision + recall) else None)
-    return {"adapter": adapter.name, "surfaces": list(adapter.surfaces),
+    return {"adapter": adapter.name, "version": adapter.resolve_version(),
+            "surfaces": list(adapter.surfaces), "languages": list(adapter.languages),
             "counts": counts, "precision": precision, "recall": recall, "f1": f1,
             "per_class": per_class, "rows": rows,
             "pairs": pairs, "pairs_scored": len(pairs), "pairs_discriminated": discriminated}
@@ -123,15 +126,21 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     selected = [a for a in adapters.ALL if not ns.adapter or ns.adapter in a.name]
-    report = {"cases": len(cases), "adapters": []}
+    report = {"cases": len(cases), "generated_at": datetime.now().astimezone().isoformat(),
+              "platform": f"{platform.system()} {platform.release()} {platform.machine()}",
+              "python": platform.python_version(), "adapters": []}
 
     for adapter in selected:
         if not adapter.available():
             print(f"— {adapter.name}: unavailable, needs {adapter.requires}")
-            report["adapters"].append({"adapter": adapter.name, "unavailable": adapter.requires})
+            report["adapters"].append({"adapter": adapter.name,
+                                       "version": adapter.resolve_version(),
+                                       "unavailable": adapter.requires})
             continue
 
-        print(f"\n{adapter.name}  (surfaces: {', '.join(adapter.surfaces)})")
+        version = adapter.resolve_version()
+        print(f"\n{adapter.name}{' ' + version if version else ''}"
+              f"  (surfaces: {', '.join(adapter.surfaces)})")
         result = score(adapter, cases)
         report["adapters"].append(result)
         for row in result["rows"]:
