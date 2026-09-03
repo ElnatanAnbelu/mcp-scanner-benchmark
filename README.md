@@ -1,5 +1,10 @@
 # MCP Scanner Benchmark
 
+[![verify](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml/badge.svg)](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![cases](https://img.shields.io/badge/corpus-26%20cases%20%2F%2013%20pairs-informational)](corpus/cases)
+[![ground truth](https://img.shields.io/badge/ground%20truth-executed-success)](corpus/verify.py)
+
 A labeled corpus of MCP servers, and a harness that runs security scanners against it and
 scores them.
 
