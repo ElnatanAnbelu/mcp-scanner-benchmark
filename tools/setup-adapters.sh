@@ -28,6 +28,13 @@ make_env mcts  -e vendor/mcts
 make_env snyk  snyk-agent-scan
 make_env skillspector "git+https://github.com/NVIDIA/SkillSpector.git"
 
+# Tencent's mcp-scan lives inside the AI-Infra-Guard checkout under vendor/.
+if [ -f vendor/ai-infra-guard/mcp-scan/requirements.txt ]; then
+  make_env tencent -r vendor/ai-infra-guard/mcp-scan/requirements.txt
+else
+  echo "== tencent"; echo "   skipped: clone Tencent/AI-Infra-Guard into vendor/ first"
+fi
+
 # Mcpwn is vendored and dependency-free, but give it an interpreter of its own so a
 # future dependency cannot reach the corpus.
 make_env mcpwn

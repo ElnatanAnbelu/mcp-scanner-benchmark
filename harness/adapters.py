@@ -568,6 +568,40 @@ class SkillSpector(Adapter):
         return ScanResult(self.name, case_dir.name, findings, seconds=seconds)
 
 
+class TencentMcpScan(Adapter):
+    """Tencent/AI-Infra-Guard's mcp-scan. Source surface, and it cannot be run for free.
+
+    Its rules cover exactly this corpus's territory: tool poisoning, credential
+    exfiltration and command injection. But it is LLM-driven end to end and refuses to
+    start without LLM_API_KEY / OPENAI_API_KEY / OPENROUTER_API_KEY. The README describes
+    a regex static pre-scan, and that stage is not reachable on its own.
+
+    Listed and unscored rather than omitted. It is the third of seven tools here that
+    needs paid credentials to do anything, alongside Cisco's behavioural mode and Snyk.
+    """
+
+    name = "tencent-mcp-scan/repo"
+    slug = "tencent"
+    surfaces = ("source",)
+    languages = ("python", "javascript", "typescript")
+    requires = "an LLM API key (LLM_API_KEY, OPENAI_API_KEY or OPENROUTER_API_KEY)"
+
+    def __init__(self) -> None:
+        self.entry = REPO / "vendor" / "ai-infra-guard" / "mcp-scan" / "main.py"
+
+    def available(self) -> bool:
+        return self.entry.is_file() and any(
+            os.environ.get(k) for k in
+            ("LLM_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY"))
+
+    def resolve_version(self) -> str:
+        commit = _git_commit(REPO / "vendor" / "ai-infra-guard")
+        return f"mcp-scan @ {commit}" if commit else "mcp-scan"
+
+    def scan(self, case_dir: Path) -> ScanResult:
+        return ScanResult(self.name, case_dir.name, [], ran=False, error="no LLM API key")
+
+
 class Mcpwn(Adapter):
     """Teycir/Mcpwn, live exploitation against a running server (the runtime surface).
 
@@ -737,7 +771,8 @@ def _first_json_object(text: str) -> dict | None:
 
 
 ALL: list[Adapter] = [CiscoStdioYara(), CiscoBehavioural(), McpWatchLocal(),
-                      Ramparts(), SnykAgentScan(), Mcts(), SkillSpector(), Mcpwn()]
+                      Ramparts(), SnykAgentScan(), Mcts(), SkillSpector(),
+                      TencentMcpScan(), Mcpwn()]
 
 
 if __name__ == "__main__":

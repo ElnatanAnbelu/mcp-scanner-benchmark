@@ -196,8 +196,12 @@ case; reporting that as 0% recall would conflate "cannot run" with "runs and fin
 
 ### 4.5 Availability is a result
 
-A capability behind a paid API key is listed and unscored rather than omitted. Cisco's
-behavioural mode falls here.
+A capability behind a paid API key is listed and unscored rather than omitted. Three of the
+eight tools measured fall here: Cisco's behavioural mode, Snyk's agent-scan (an account token,
+and the analysis is a cloud call), and Tencent's mcp-scan (one of three LLM keys, with no
+static-only path despite a documented regex pre-scan stage). That is not a footnote about
+three tools; it is a property of the field, and it is why every score in this table is
+reproducible by anyone and those three are absent.
 
 Both scored metadata adapters run with their LLM analyser off, and each says so in a
 `scored_with` line printed above its score and recorded in the results file. ramparts is
