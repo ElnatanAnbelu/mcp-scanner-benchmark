@@ -35,9 +35,9 @@ SOURCES = {
     "mcpwn": ("github-head", "Teycir/Mcpwn"),
 }
 
-# Tools installed from a checkout are compared by commit, not by tag. The GitHub tags API
-# orders by name, so it once reported MCTS "v1", a tag from before v0.1.4, as new; the
-# branch itself had moved 122 commits and no tag said so.
+# Tools installed from a checkout are compared by commit against the default branch,
+# not by tag. The GitHub tags API orders by name, so it once reported MCTS "v1", a tag
+# from before v0.1.4, as new when nothing had moved.
 # ramparts is both: a released binary, plus rules vendored from a commit.
 RULES_SOURCE = {"ramparts": ("github-head", "highflame-ai/ramparts")}
 
