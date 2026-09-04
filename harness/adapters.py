@@ -225,6 +225,14 @@ class McpWatchLocal(Adapter):
         return self.binary.is_file()
 
     def resolve_version(self) -> str:
+        # Read package.json rather than trusting --version: mcp-watch 2.0.1 prints 2.0.0,
+        # and a drift check against npm reported a release that was already installed.
+        try:
+            meta = json.loads((REPO / "node_modules" / "mcp-watch" / "package.json").read_text())
+            if meta.get("version"):
+                return str(meta["version"])
+        except (OSError, ValueError):
+            pass
         return _run_version([str(self.binary), "--version"])
 
     def scan(self, case_dir: Path) -> ScanResult:
@@ -459,7 +467,11 @@ class Mcts(Adapter):
         return Path(self.binary).is_file()
 
     def resolve_version(self) -> str:
-        return _run_version([self.binary, "--version"])
+        # Installed from a checkout, so the commit is the version that matters: MCTS's
+        # tags are sparse and its main branch moves between them.
+        version = _run_version([self.binary, "--version"])
+        commit = _git_commit(REPO / "vendor" / "mcts")
+        return f"{version} @ {commit}" if commit else version
 
     def scan(self, case_dir: Path) -> ScanResult:
         import tempfile
@@ -524,9 +536,18 @@ class SkillSpector(Adapter):
         return Path(self.binary).is_file()
 
     def resolve_version(self) -> str:
-        return _run_version([str(adapter_python(self.slug)), "-c",
-                             "import importlib.metadata as m;"
-                             "print(m.version('skillspector'))"])
+        # pip installs from git record the commit in direct_url.json; the version number
+        # alone does not change between commits on NVIDIA's main branch.
+        version = _run_version([str(adapter_python(self.slug)), "-c",
+                                "import importlib.metadata as m;"
+                                "print(m.version('skillspector'))"])
+        commit = _run_version([str(adapter_python(self.slug)), "-c",
+                               "import importlib.metadata as m, json;"
+                               "d = m.distribution('skillspector');"
+                               "print(json.loads(d.read_text('direct_url.json') or '{}')"
+                               ".get('vcs_info', {}).get('commit_id', ''))"],
+                              pattern=r"[0-9a-f]{40}")
+        return f"{version} @ {commit[:7]}" if commit else version
 
     def scan(self, case_dir: Path) -> ScanResult:
         import tempfile
@@ -685,7 +706,10 @@ def _run_version(cmd: list[str], pattern: str = r"[0-9]+\.[0-9]+(?:\.[0-9]+)?") 
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     except (OSError, subprocess.SubprocessError):
         return ""
-    m = re.search(pattern, (proc.stdout or "") + (proc.stderr or ""))
+    # Strip terminal colour first: rich-styled CLIs print "0.1" and "4" in separate
+    # escape sequences, which reads as version 0.1.
+    text = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", (proc.stdout or "") + (proc.stderr or ""))
+    m = re.search(pattern, text)
     return m.group(0) if m else ""
 
 
