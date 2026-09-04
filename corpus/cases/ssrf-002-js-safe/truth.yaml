@@ -1,0 +1,28 @@
+id: ssrf-002-js-safe
+language: javascript
+verdict: safe
+class: null
+title: Same fetch sink behind a scheme allowlist and a public-destination check (JavaScript)
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: fetch_preview
+  parameter: url
+
+proof:
+  tool: fetch_preview
+  listener: true
+  args:
+    url: "{listener}/latest/meta-data/"
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: ssrf-002-js
+notes: >
+  The same listener, on the same loopback address, refused. publicUrl resolves the host
+  and rejects loopback, private, link-local, carrier-grade NAT and reserved ranges before
+  fetch sees it, which is the check the vulnerable twin lacks. Flagging this is a false
+  positive.

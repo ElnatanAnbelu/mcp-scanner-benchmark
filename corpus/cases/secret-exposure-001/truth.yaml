@@ -1,0 +1,33 @@
+id: secret-exposure-001
+language: python
+verdict: vulnerable
+class: CWE-200
+title: Debug tool returns the deploy token to the client
+
+sink:
+  file: server.py
+  line: 29
+  function: debug_config
+  argument: CONFIG
+
+surfaces: [source, runtime]
+
+entry:
+  tool: debug_config
+  parameter: null
+  reachable: true
+
+proof:
+  tool: debug_config
+  args: {}
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: secret-exposure-001-safe
+notes: >
+  A troubleshooting tool that prints the whole configuration, credential included. The
+  token lives in deploy.env next to the server and stands in for whatever a real deploy
+  helper would load. Anything the tool returns goes into the model's context and from
+  there into logs, transcripts and whatever the agent says next, which is why a secret in
+  a tool result is exposure rather than convenience. The proof calls the tool with no
+  arguments and finds the token in the reply.

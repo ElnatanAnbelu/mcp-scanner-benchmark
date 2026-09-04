@@ -182,7 +182,7 @@ in that adapter's docstring.
 **A pair is discriminated only when the vulnerable twin is flagged and the safe twin is not.**
 
 This is the headline metric because precision and recall hide the failure this benchmark
-exists to expose. MCTS scores 71% recall and discriminates 1 of 14 pairs. It flags both twins
+exists to expose. MCTS scores 69% recall and discriminates 1 of 16 pairs. It flags both twins
 alike, so nearly every true positive is a coincidence: something present in both files, with the
 label happening to match.
 
@@ -218,7 +218,7 @@ as what the tool does with everything switched on.
 
 Scanners pin their own dependencies and some of those conflict with the corpus.
 `snyk-agent-scan` requires `mcp<2`, and installing it alongside the corpus downgraded mcp
-from 2.1.1 to 1.28.1, which broke 20 of the 28 cases: the servers import `MCPServer`, which
+from 2.1.1 to 1.28.1, which broke 20 of the 28 cases then in the corpus: the servers import `MCPServer`, which
 exists only in 2.x. `corpus/verify.py` failed loudly rather than letting the harness produce
 wrong numbers against half-broken servers, but a benchmark should not be one `pip install`
 away from corrupting its own ground truth.
@@ -251,7 +251,7 @@ the default-install gap is reported as a separate finding rather than as a bad s
 `FastMCP` may under-detect these servers for that reason alone rather than for anything to do
 with their analysis. MCTS is 0.1.4 and probably predates the rename. This is the most likely
 explanation a maintainer will reach for, and it is a fair one: a tool that identifies MCP
-servers by matching `FastMCP(` would find nothing to analyse in 22 of the 28 cases. The
+servers by matching `FastMCP(` would find nothing to analyse in 22 of the 32 cases. The
 JavaScript cases use `@modelcontextprotocol/sdk` 1.30.0, where `McpServer` is current, so the
 two halves of the corpus are not on equal footing here either. `requirements.txt` pins `mcp==2.1.1` so the corpus cannot shift underneath a result.
 

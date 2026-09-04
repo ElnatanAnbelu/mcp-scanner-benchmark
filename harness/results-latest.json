@@ -1,6 +1,6 @@
 {
-  "cases": 28,
-  "generated_at": "2026-09-03T21:37:09.465085-05:00",
+  "cases": 32,
+  "generated_at": "2026-09-04T10:40:14.649785-05:00",
   "platform": "Darwin 25.6.0 arm64",
   "python": "3.14.5",
   "adapters": [
@@ -21,7 +21,7 @@
         "fp": 1,
         "tn": 2,
         "fn": 0,
-        "skipped": 22,
+        "skipped": 26,
         "errors": 0
       },
       "precision": 0.75,
@@ -135,6 +135,16 @@
           "why": "surfaces ['source', 'runtime'] outside ['metadata']"
         },
         {
+          "case": "secret-exposure-001",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
+          "case": "secret-exposure-001-safe",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
           "case": "ssrf-001",
           "outcome": "skipped",
           "why": "surfaces ['source', 'runtime'] outside ['metadata']"
@@ -145,10 +155,20 @@
           "why": "surfaces ['source', 'runtime'] outside ['metadata']"
         },
         {
+          "case": "ssrf-002-js",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
+          "case": "ssrf-002-js-safe",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 2.44,
+          "seconds": 2.6,
           "detail": [
             "convert: 2 finding(s)"
           ],
@@ -195,7 +215,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.98,
+          "seconds": 2.1,
           "detail": [],
           "raw": []
         },
@@ -203,7 +223,7 @@
           "case": "tool-poisoning-002-js",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.73,
+          "seconds": 1.84,
           "detail": [
             "convert: 2 finding(s)"
           ],
@@ -250,7 +270,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.77,
+          "seconds": 1.79,
           "detail": [],
           "raw": []
         },
@@ -258,7 +278,7 @@
           "case": "tool-poisoning-003",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.99,
+          "seconds": 2.0,
           "detail": [
             "convert: 2 finding(s)"
           ],
@@ -305,7 +325,7 @@
           "case": "tool-poisoning-003-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 2.11,
+          "seconds": 2.02,
           "detail": [
             "convert: 1 finding(s)"
           ],
@@ -400,16 +420,16 @@
         "typescript"
       ],
       "counts": {
-        "tp": 1,
-        "fp": 1,
+        "tp": 2,
+        "fp": 2,
         "tn": 3,
         "fn": 3,
-        "skipped": 20,
+        "skipped": 22,
         "errors": 0
       },
       "precision": 0.5,
-      "recall": 0.25,
-      "f1": 0.3333333333333333,
+      "recall": 0.4,
+      "f1": 0.4444444444444445,
       "per_class": {
         "authz-session": {
           "tp": 0,
@@ -442,6 +462,18 @@
           "fn": 0
         },
         "safe-pair-of:path-traversal-002-js": {
+          "tp": 0,
+          "fp": 1,
+          "tn": 0,
+          "fn": 0
+        },
+        "CWE-918": {
+          "tp": 1,
+          "fp": 0,
+          "tn": 0,
+          "fn": 0
+        },
+        "safe-pair-of:ssrf-002-js": {
           "tp": 0,
           "fp": 1,
           "tn": 0,
@@ -503,7 +535,7 @@
           "case": "authz-004-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.03,
+          "seconds": 0.04,
           "detail": [],
           "raw": []
         },
@@ -630,6 +662,16 @@
           ]
         },
         {
+          "case": "secret-exposure-001",
+          "outcome": "skipped",
+          "why": "language 'python' unsupported (reads javascript/typescript)"
+        },
+        {
+          "case": "secret-exposure-001-safe",
+          "outcome": "skipped",
+          "why": "language 'python' unsupported (reads javascript/typescript)"
+        },
+        {
           "case": "ssrf-001",
           "outcome": "skipped",
           "why": "language 'python' unsupported (reads javascript/typescript)"
@@ -638,6 +680,124 @@
           "case": "ssrf-001-safe",
           "outcome": "skipped",
           "why": "language 'python' unsupported (reads javascript/typescript)"
+        },
+        {
+          "case": "ssrf-002-js",
+          "outcome": "tp",
+          "findings": 4,
+          "seconds": 0.04,
+          "detail": [
+            "toxic-flow: ",
+            "toxic-flow: ",
+            "toxic-flow: ",
+            "toxic-flow: "
+          ],
+          "raw": [
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 4,
+              "evidence": "// The JavaScript twin of ssrf-001: fetch() on whatever URL the caller supplies.",
+              "source": "Invariant Labs research"
+            },
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 17,
+              "evidence": "const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });",
+              "source": "Invariant Labs research"
+            },
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 18,
+              "evidence": "const body = await resp.text();",
+              "source": "Invariant Labs research"
+            },
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 19,
+              "evidence": "return { content: [{ type: \"text\", text: body.slice(0, limit) }] };",
+              "source": "Invariant Labs research"
+            }
+          ]
+        },
+        {
+          "case": "ssrf-002-js-safe",
+          "outcome": "fp",
+          "findings": 5,
+          "seconds": 0.04,
+          "detail": [
+            "tool-mutation: ",
+            "toxic-flow: ",
+            "toxic-flow: ",
+            "toxic-flow: ",
+            "toxic-flow: "
+          ],
+          "raw": [
+            {
+              "id": "TOOL_NAME_COLLISION",
+              "severity": "medium",
+              "category": "tool-mutation",
+              "message": "Tool name collision risk",
+              "file": "server.js",
+              "line": 4,
+              "evidence": "// Same shape as ssrf-002-js: same tool name, same description, same fetch sink.",
+              "source": "VulnerableMCP database"
+            },
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 53,
+              "evidence": "const resp = await fetch(await publicUrl(url), { signal: AbortSignal.timeout(10_000) });",
+              "source": "Invariant Labs research"
+            },
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 54,
+              "evidence": "const body = await resp.text();",
+              "source": "Invariant Labs research"
+            },
+            {
+              "id": "UNTRUSTED_DATA_PROCESSING",
+              "severity": "medium",
+              "category": "toxic-flow",
+              "message": "External data processed without sanitization",
+              "file": "server.js",
+              "line": 55,
+              "evidence": "return { content: [{ type: \"text\", text: body.slice(0, limit) }] };",
+              "source": "Invariant Labs research"
+            },
+            {
+              "id": "GENERIC_TOXIC_FLOW_CHAIN",
+              "severity": "critical",
+              "category": "toxic-flow",
+              "message": "Complete toxic flow: external input \u2192 privileged access \u2192 public output",
+              "file": "server.js",
+              "evidence": "File contains external input processing, privileged data access, and public output mechanisms",
+              "source": "Invariant Labs research"
+            }
+          ]
         },
         {
           "case": "tool-poisoning-001",
@@ -715,6 +875,12 @@
           "vulnerable": "tp",
           "safe": "fp"
         },
+        "ssrf-002-js": {
+          "class": "CWE-918",
+          "discriminated": false,
+          "vulnerable": "tp",
+          "safe": "fp"
+        },
         "tool-poisoning-002-js": {
           "class": "tool-poisoning",
           "discriminated": false,
@@ -722,7 +888,7 @@
           "safe": "tn"
         }
       },
-      "pairs_scored": 4,
+      "pairs_scored": 5,
       "pairs_discriminated": 0
     },
     {
@@ -742,7 +908,7 @@
         "fp": 1,
         "tn": 2,
         "fn": 0,
-        "skipped": 22,
+        "skipped": 26,
         "errors": 0
       },
       "precision": 0.75,
@@ -856,12 +1022,32 @@
           "why": "surfaces ['source', 'runtime'] outside ['metadata']"
         },
         {
+          "case": "secret-exposure-001",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
+          "case": "secret-exposure-001-safe",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
           "case": "ssrf-001",
           "outcome": "skipped",
           "why": "surfaces ['source', 'runtime'] outside ['metadata']"
         },
         {
           "case": "ssrf-001-safe",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
+          "case": "ssrf-002-js",
+          "outcome": "skipped",
+          "why": "surfaces ['source', 'runtime'] outside ['metadata']"
+        },
+        {
+          "case": "ssrf-002-js-safe",
           "outcome": "skipped",
           "why": "surfaces ['source', 'runtime'] outside ['metadata']"
         },
@@ -903,7 +1089,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.63,
+          "seconds": 0.62,
           "detail": [],
           "raw": []
         },
@@ -953,7 +1139,7 @@
           "case": "tool-poisoning-003",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 0.64,
+          "seconds": 0.62,
           "detail": [
             "yara: SSHKeyExposure"
           ],
@@ -1079,16 +1265,16 @@
         "typescript"
       ],
       "counts": {
-        "tp": 10,
-        "fp": 9,
-        "tn": 5,
-        "fn": 4,
+        "tp": 11,
+        "fp": 10,
+        "tn": 6,
+        "fn": 5,
         "skipped": 0,
         "errors": 0
       },
-      "precision": 0.5263157894736842,
-      "recall": 0.7142857142857143,
-      "f1": 0.6060606060606061,
+      "precision": 0.5238095238095238,
+      "recall": 0.6875,
+      "f1": 0.5945945945945946,
       "per_class": {
         "authz-session": {
           "tp": 3,
@@ -1156,13 +1342,31 @@
           "tn": 1,
           "fn": 0
         },
+        "CWE-200": {
+          "tp": 0,
+          "fp": 0,
+          "tn": 0,
+          "fn": 1
+        },
+        "safe-pair-of:secret-exposure-001": {
+          "tp": 0,
+          "fp": 0,
+          "tn": 1,
+          "fn": 0
+        },
         "CWE-918": {
-          "tp": 1,
+          "tp": 2,
           "fp": 0,
           "tn": 0,
           "fn": 0
         },
         "safe-pair-of:ssrf-001": {
+          "tp": 0,
+          "fp": 1,
+          "tn": 0,
+          "fn": 0
+        },
+        "safe-pair-of:ssrf-002-js": {
           "tp": 0,
           "fp": 1,
           "tn": 0,
@@ -1210,7 +1414,7 @@
           "case": "authz-001",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.77,
+          "seconds": 0.89,
           "detail": [
             "Handler egress to HTTP client: get_report",
             "Untrusted input may reach sink on get_report",
@@ -1219,7 +1423,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-5096",
+              "id": "net-net-01-21157",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: get_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -1610,7 +1814,7 @@
           "case": "authz-001-safe",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.75,
+          "seconds": 0.88,
           "detail": [
             "Handler egress to HTTP client: get_report",
             "Untrusted input may reach sink on get_report",
@@ -1619,7 +1823,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-11175",
+              "id": "net-net-01-23776",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: get_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -2010,7 +2214,7 @@
           "case": "authz-002",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.69,
+          "seconds": 0.89,
           "detail": [
             "Handler egress to HTTP client: list_tickets",
             "Untrusted input may reach sink on list_tickets",
@@ -2019,7 +2223,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-31938",
+              "id": "net-net-01-52889",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: list_tickets",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -2410,7 +2614,7 @@
           "case": "authz-002-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.69,
+          "seconds": 0.89,
           "detail": [],
           "raw": []
         },
@@ -2418,7 +2622,7 @@
           "case": "authz-003",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.67,
+          "seconds": 0.87,
           "detail": [
             "Handler egress to HTTP client: read_setting",
             "Sigma rule match on tool:read_setting: MCP Tool Shadowing Attack Detection (MCTS-T-1008)",
@@ -2428,7 +2632,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-40431",
+              "id": "net-net-01-48507",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: read_setting",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -2870,7 +3074,7 @@
           "case": "authz-003-safe",
           "outcome": "fp",
           "findings": 6,
-          "seconds": 0.76,
+          "seconds": 0.91,
           "detail": [
             "Handler egress to HTTP client: read_setting",
             "Sigma rule match on tool:read_setting: MCP Tool Shadowing Attack Detection (MCTS-T-1008)",
@@ -2880,7 +3084,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-59989",
+              "id": "net-net-01-19503",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: read_setting",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -3373,7 +3577,7 @@
           "case": "authz-004-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.75,
+          "seconds": 0.97,
           "detail": [],
           "raw": []
         },
@@ -3381,7 +3585,7 @@
           "case": "authz-004-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.75,
+          "seconds": 1.14,
           "detail": [],
           "raw": []
         },
@@ -3389,7 +3593,7 @@
           "case": "cmd-injection-001",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.71,
+          "seconds": 1.92,
           "detail": [
             "Command execution in run_diagnostic: subprocess invocation",
             "Command execution in resolve_host: subprocess invocation",
@@ -3788,7 +3992,7 @@
           "case": "cmd-injection-001-safe",
           "outcome": "fp",
           "findings": 5,
-          "seconds": 0.76,
+          "seconds": 0.99,
           "detail": [
             "Command execution in run_diagnostic: subprocess invocation",
             "Command execution in resolve_host: subprocess invocation",
@@ -4193,7 +4397,7 @@
           "case": "cmd-injection-002-js",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 0.68,
+          "seconds": 1.07,
           "detail": [
             "Security-sensitive operations in run_diagnostic"
           ],
@@ -4255,7 +4459,7 @@
           "case": "cmd-injection-002-js-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.74,
+          "seconds": 0.92,
           "detail": [
             "Security-sensitive operations in run_diagnostic"
           ],
@@ -4317,7 +4521,7 @@
           "case": "path-traversal-001",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.69,
+          "seconds": 0.92,
           "detail": [],
           "raw": []
         },
@@ -4325,7 +4529,7 @@
           "case": "path-traversal-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.75,
+          "seconds": 0.96,
           "detail": [],
           "raw": []
         },
@@ -4333,7 +4537,7 @@
           "case": "path-traversal-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.83,
+          "seconds": 0.91,
           "detail": [],
           "raw": []
         },
@@ -4341,7 +4545,23 @@
           "case": "path-traversal-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.76,
+          "seconds": 0.9,
+          "detail": [],
+          "raw": []
+        },
+        {
+          "case": "secret-exposure-001",
+          "outcome": "fn",
+          "findings": 0,
+          "seconds": 0.89,
+          "detail": [],
+          "raw": []
+        },
+        {
+          "case": "secret-exposure-001-safe",
+          "outcome": "tn",
+          "findings": 0,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -4349,7 +4569,7 @@
           "case": "ssrf-001",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.77,
+          "seconds": 0.9,
           "detail": [
             "Handler egress to HTTP client: fetch_preview",
             "Untrusted input may reach sink on fetch_preview",
@@ -4359,7 +4579,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-40261",
+              "id": "net-net-01-44922",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: fetch_preview",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -4806,7 +5026,7 @@
           "case": "ssrf-001-safe",
           "outcome": "fp",
           "findings": 5,
-          "seconds": 0.68,
+          "seconds": 0.9,
           "detail": [
             "Handler egress to HTTP client: fetch_preview",
             "Untrusted input may reach sink on fetch_preview",
@@ -4816,7 +5036,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-2914",
+              "id": "net-net-01-52665",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: fetch_preview",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -5261,10 +5481,416 @@
           ]
         },
         {
+          "case": "ssrf-002-js",
+          "outcome": "tp",
+          "findings": 2,
+          "seconds": 0.9,
+          "detail": [
+            "Handler egress to HTTP client: fetch_preview",
+            "SSRF exfiltration to model context"
+          ],
+          "raw": [
+            {
+              "id": "net-net-01-37745",
+              "analyzer": "network_egress",
+              "title": "Handler egress to HTTP client: fetch_preview",
+              "description": "Tool handler or module reaches an HTTP client sink.",
+              "severity": "critical",
+              "recommendation": "Add URL allowlist, block RFC1918/metadata hosts, and disable blind redirect following.",
+              "tool": "fetch_preview",
+              "evidence": {
+                "surface": "tool",
+                "rule_id": "NET-01",
+                "finding_class": "security",
+                "analysis_depth": "L1",
+                "technique_id": "MCTS-T-net-01",
+                "data_flow": "user_input \u2192 http_client",
+                "code_location": {
+                  "file": "<repo>/corpus/cases/ssrf-002-js/server.js",
+                  "line": 12
+                },
+                "facts": [
+                  {
+                    "rule_id": "NET-01",
+                    "match": "Handler egress to HTTP client: fetch_preview",
+                    "field": "handler",
+                    "file": "<repo>/corpus/cases/ssrf-002-js/server.js",
+                    "line": 12,
+                    "tool": "fetch_preview"
+                  }
+                ],
+                "evidence_tier": "bronze",
+                "exploitability_class": "network_egress",
+                "reachability_tag": "network_exposed",
+                "ciafc_hints": [
+                  "confidentiality",
+                  "integrity"
+                ]
+              },
+              "technique_id": null,
+              "mitigation_ids": [],
+              "cwe_id": null,
+              "confidence": 0.85,
+              "location": {
+                "file": "<repo>/corpus/cases/ssrf-002-js/server.js",
+                "line": 12
+              },
+              "impact": null,
+              "evidence_strength": null,
+              "display_severity": null,
+              "priority_score": null,
+              "finding_type": null,
+              "evidence_type": null,
+              "chain_level": null,
+              "finding_kind": null,
+              "rule_stability": "mature"
+            },
+            {
+              "id": "chain-ssrf-exfil",
+              "analyzer": "attack_graph",
+              "title": "SSRF exfiltration to model context",
+              "description": "Attack graph matched template SSRF_EXFIL.",
+              "severity": "critical",
+              "recommendation": "disable_network_egress; add_url_policy",
+              "tool": "fetch_preview",
+              "evidence": {
+                "template_id": "SSRF_EXFIL",
+                "path_proven": true,
+                "chain_confidence": 0.922,
+                "path_reachability": 1.0,
+                "chain_risk_score": 5.071,
+                "trust_boundary_crossings": 1,
+                "exploit_cost": 2,
+                "paths": [
+                  {
+                    "nodes": [
+                      "tool:fetch_preview",
+                      "sink:external_network",
+                      "sink:model_context"
+                    ],
+                    "edges": [
+                      "edge-0ad88192c551",
+                      "edge-eca7333e421d"
+                    ],
+                    "hop_count": 2,
+                    "tools_on_path": [
+                      "fetch_preview"
+                    ],
+                    "chain_confidence": 0.922,
+                    "path_reachability": 1.0,
+                    "chain_risk_score": 5.071,
+                    "explanation": [
+                      {
+                        "message": "Tool performs outbound network access with user-influenced URL.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      },
+                      {
+                        "message": "Tool result is delivered automatically to model context.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "finding_class": "security",
+                "counterfactual_remediation": {
+                  "triggered_by": [
+                    "SSRF_EXFIL: Remove or block outbound network tools and httpx/fetch sinks (fetch_preview)",
+                    "SSRF_EXFIL: Enforce URL allowlist and block RFC1918/metadata hosts (fetch_preview)"
+                  ],
+                  "removing_any_one_eliminates_finding": true,
+                  "actions": [
+                    {
+                      "action": "Remove or block outbound network tools and httpx/fetch sinks",
+                      "removes": "disable_network_egress"
+                    },
+                    {
+                      "action": "Enforce URL allowlist and block RFC1918/metadata hosts",
+                      "removes": "add_url_policy"
+                    }
+                  ],
+                  "recommended_fixes": [
+                    {
+                      "kind": "disable_network_egress",
+                      "description": "Remove or block outbound network tools and httpx/fetch sinks"
+                    },
+                    {
+                      "kind": "add_url_policy",
+                      "description": "Enforce URL allowlist and block RFC1918/metadata hosts"
+                    }
+                  ],
+                  "template_id": "SSRF_EXFIL",
+                  "fix_simulation": [
+                    {
+                      "fix_kind": "disable_network_egress",
+                      "description": "Remove or block outbound network tools and httpx/fetch sinks",
+                      "eliminates_template": false,
+                      "mutates_applied": 0
+                    },
+                    {
+                      "fix_kind": "add_url_policy",
+                      "description": "Enforce URL allowlist and block RFC1918/metadata hosts",
+                      "eliminates_template": false,
+                      "mutates_applied": 0
+                    }
+                  ],
+                  "effective_fixes": []
+                },
+                "recommended_fixes": [
+                  {
+                    "kind": "disable_network_egress",
+                    "description": "Remove or block outbound network tools and httpx/fetch sinks"
+                  },
+                  {
+                    "kind": "add_url_policy",
+                    "description": "Enforce URL allowlist and block RFC1918/metadata hosts"
+                  }
+                ],
+                "facts": [
+                  {
+                    "rule_id": "SSRF_EXFIL",
+                    "match": "SSRF exfiltration to model context",
+                    "field": "attack_graph"
+                  }
+                ],
+                "evidence_tier": "bronze",
+                "confidence": 0.7,
+                "analysis_mode": "static_heuristic",
+                "path": [
+                  "tool:fetch_preview",
+                  "sink:external_network",
+                  "sink:model_context"
+                ],
+                "hop_count": 2
+              },
+              "technique_id": "MCTS-T-attack-graph",
+              "mitigation_ids": [],
+              "cwe_id": null,
+              "confidence": 0.9219544457292888,
+              "location": null,
+              "impact": null,
+              "evidence_strength": null,
+              "display_severity": null,
+              "priority_score": null,
+              "finding_type": null,
+              "evidence_type": null,
+              "chain_level": null,
+              "finding_kind": null,
+              "rule_stability": "heuristic"
+            }
+          ]
+        },
+        {
+          "case": "ssrf-002-js-safe",
+          "outcome": "fp",
+          "findings": 2,
+          "seconds": 0.91,
+          "detail": [
+            "Handler egress to HTTP client: fetch_preview",
+            "SSRF exfiltration to model context"
+          ],
+          "raw": [
+            {
+              "id": "net-net-01-8359",
+              "analyzer": "network_egress",
+              "title": "Handler egress to HTTP client: fetch_preview",
+              "description": "Tool handler or module reaches an HTTP client sink.",
+              "severity": "high",
+              "recommendation": "Add URL allowlist, block RFC1918/metadata hosts, and disable blind redirect following.",
+              "tool": "fetch_preview",
+              "evidence": {
+                "surface": "tool",
+                "rule_id": "NET-01",
+                "finding_class": "security",
+                "analysis_depth": "L1",
+                "technique_id": "MCTS-T-net-01",
+                "data_flow": "user_input \u2192 http_client",
+                "code_location": {
+                  "file": "<repo>/corpus/cases/ssrf-002-js-safe/server.js",
+                  "line": 48
+                },
+                "facts": [
+                  {
+                    "rule_id": "NET-01",
+                    "match": "Handler egress to HTTP client: fetch_preview",
+                    "field": "handler",
+                    "file": "<repo>/corpus/cases/ssrf-002-js-safe/server.js",
+                    "line": 48,
+                    "tool": "fetch_preview"
+                  }
+                ],
+                "evidence_tier": "bronze",
+                "exploitability_class": "network_egress",
+                "reachability_tag": "network_exposed",
+                "ciafc_hints": [
+                  "confidentiality",
+                  "integrity"
+                ]
+              },
+              "technique_id": null,
+              "mitigation_ids": [],
+              "cwe_id": null,
+              "confidence": 0.85,
+              "location": {
+                "file": "<repo>/corpus/cases/ssrf-002-js-safe/server.js",
+                "line": 48
+              },
+              "impact": null,
+              "evidence_strength": null,
+              "display_severity": null,
+              "priority_score": null,
+              "finding_type": null,
+              "evidence_type": null,
+              "chain_level": null,
+              "finding_kind": null,
+              "rule_stability": "mature"
+            },
+            {
+              "id": "chain-ssrf-exfil",
+              "analyzer": "attack_graph",
+              "title": "SSRF exfiltration to model context",
+              "description": "Attack graph matched template SSRF_EXFIL.",
+              "severity": "critical",
+              "recommendation": "disable_network_egress; add_url_policy",
+              "tool": "fetch_preview",
+              "evidence": {
+                "template_id": "SSRF_EXFIL",
+                "path_proven": true,
+                "chain_confidence": 0.922,
+                "path_reachability": 1.0,
+                "chain_risk_score": 5.071,
+                "trust_boundary_crossings": 1,
+                "exploit_cost": 2,
+                "paths": [
+                  {
+                    "nodes": [
+                      "tool:fetch_preview",
+                      "sink:external_network",
+                      "sink:model_context"
+                    ],
+                    "edges": [
+                      "edge-0ad88192c551",
+                      "edge-eca7333e421d"
+                    ],
+                    "hop_count": 2,
+                    "tools_on_path": [
+                      "fetch_preview"
+                    ],
+                    "chain_confidence": 0.922,
+                    "path_reachability": 1.0,
+                    "chain_risk_score": 5.071,
+                    "explanation": [
+                      {
+                        "message": "Tool performs outbound network access with user-influenced URL.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      },
+                      {
+                        "message": "Tool result is delivered automatically to model context.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "finding_class": "security",
+                "counterfactual_remediation": {
+                  "triggered_by": [
+                    "SSRF_EXFIL: Remove or block outbound network tools and httpx/fetch sinks (fetch_preview)",
+                    "SSRF_EXFIL: Enforce URL allowlist and block RFC1918/metadata hosts (fetch_preview)"
+                  ],
+                  "removing_any_one_eliminates_finding": true,
+                  "actions": [
+                    {
+                      "action": "Remove or block outbound network tools and httpx/fetch sinks",
+                      "removes": "disable_network_egress"
+                    },
+                    {
+                      "action": "Enforce URL allowlist and block RFC1918/metadata hosts",
+                      "removes": "add_url_policy"
+                    }
+                  ],
+                  "recommended_fixes": [
+                    {
+                      "kind": "disable_network_egress",
+                      "description": "Remove or block outbound network tools and httpx/fetch sinks"
+                    },
+                    {
+                      "kind": "add_url_policy",
+                      "description": "Enforce URL allowlist and block RFC1918/metadata hosts"
+                    }
+                  ],
+                  "template_id": "SSRF_EXFIL",
+                  "fix_simulation": [
+                    {
+                      "fix_kind": "disable_network_egress",
+                      "description": "Remove or block outbound network tools and httpx/fetch sinks",
+                      "eliminates_template": false,
+                      "mutates_applied": 0
+                    },
+                    {
+                      "fix_kind": "add_url_policy",
+                      "description": "Enforce URL allowlist and block RFC1918/metadata hosts",
+                      "eliminates_template": false,
+                      "mutates_applied": 0
+                    }
+                  ],
+                  "effective_fixes": []
+                },
+                "recommended_fixes": [
+                  {
+                    "kind": "disable_network_egress",
+                    "description": "Remove or block outbound network tools and httpx/fetch sinks"
+                  },
+                  {
+                    "kind": "add_url_policy",
+                    "description": "Enforce URL allowlist and block RFC1918/metadata hosts"
+                  }
+                ],
+                "facts": [
+                  {
+                    "rule_id": "SSRF_EXFIL",
+                    "match": "SSRF exfiltration to model context",
+                    "field": "attack_graph"
+                  }
+                ],
+                "evidence_tier": "bronze",
+                "confidence": 0.7,
+                "analysis_mode": "static_heuristic",
+                "path": [
+                  "tool:fetch_preview",
+                  "sink:external_network",
+                  "sink:model_context"
+                ],
+                "hop_count": 2
+              },
+              "technique_id": "MCTS-T-attack-graph",
+              "mitigation_ids": [],
+              "cwe_id": null,
+              "confidence": 0.9219544457292888,
+              "location": null,
+              "impact": null,
+              "evidence_strength": null,
+              "display_severity": null,
+              "priority_score": null,
+              "finding_type": null,
+              "evidence_type": null,
+              "chain_level": null,
+              "finding_kind": null,
+              "rule_stability": "heuristic"
+            }
+          ]
+        },
+        {
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 3,
-          "seconds": 0.69,
+          "seconds": 0.9,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request",
             "Tool shadowing pattern on convert",
@@ -5418,7 +6044,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 0.75,
+          "seconds": 0.9,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request"
           ],
@@ -5477,7 +6103,7 @@
           "case": "tool-poisoning-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 0.76,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -5485,7 +6111,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 0.89,
+          "seconds": 0.9,
           "detail": [],
           "raw": []
         },
@@ -5493,7 +6119,7 @@
           "case": "tool-poisoning-003",
           "outcome": "tp",
           "findings": 3,
-          "seconds": 0.67,
+          "seconds": 0.84,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request",
             "Tool shadowing pattern on convert",
@@ -5647,7 +6273,7 @@
           "case": "tool-poisoning-003-safe",
           "outcome": "fp",
           "findings": 2,
-          "seconds": 0.67,
+          "seconds": 0.83,
           "detail": [
             "Metadata poisoning on tool:convert (description): credential request",
             "High-risk injection surface on tool:convert"
@@ -5760,7 +6386,7 @@
           "case": "unreachable-sink-001",
           "outcome": "fp",
           "findings": 6,
-          "seconds": 0.75,
+          "seconds": 0.92,
           "detail": [
             "Handler egress to HTTP client: build_status",
             "Handler egress to HTTP client: refresh_cache",
@@ -5770,7 +6396,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-56603",
+              "id": "net-net-01-23152",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: build_status",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -5825,7 +6451,7 @@
               "rule_stability": "mature"
             },
             {
-              "id": "net-net-01-4898",
+              "id": "net-net-01-43045",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: refresh_cache",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -6048,7 +6674,7 @@
               "description": "Attack graph matched template SSRF_EXFIL.",
               "severity": "critical",
               "recommendation": "disable_network_egress; add_url_policy",
-              "tool": "refresh_cache",
+              "tool": "build_status",
               "evidence": {
                 "template_id": "SSRF_EXFIL",
                 "path_proven": true,
@@ -6058,38 +6684,6 @@
                 "trust_boundary_crossings": 1,
                 "exploit_cost": 2,
                 "paths": [
-                  {
-                    "nodes": [
-                      "tool:refresh_cache",
-                      "sink:external_network",
-                      "sink:model_context"
-                    ],
-                    "edges": [
-                      "edge-fcadf7d254fc",
-                      "edge-508a9e69ba0d"
-                    ],
-                    "hop_count": 2,
-                    "tools_on_path": [
-                      "refresh_cache"
-                    ],
-                    "chain_confidence": 0.866,
-                    "path_reachability": 1.0,
-                    "chain_risk_score": 4.763,
-                    "explanation": [
-                      {
-                        "message": "Tool performs outbound network access with user-influenced URL.",
-                        "derived_from": [
-                          "template:SSRF_EXFIL"
-                        ]
-                      },
-                      {
-                        "message": "Tool result is delivered automatically to model context.",
-                        "derived_from": [
-                          "template:SSRF_EXFIL"
-                        ]
-                      }
-                    ]
-                  },
                   {
                     "nodes": [
                       "tool:build_status",
@@ -6121,13 +6715,45 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "nodes": [
+                      "tool:refresh_cache",
+                      "sink:external_network",
+                      "sink:model_context"
+                    ],
+                    "edges": [
+                      "edge-fcadf7d254fc",
+                      "edge-508a9e69ba0d"
+                    ],
+                    "hop_count": 2,
+                    "tools_on_path": [
+                      "refresh_cache"
+                    ],
+                    "chain_confidence": 0.866,
+                    "path_reachability": 1.0,
+                    "chain_risk_score": 4.763,
+                    "explanation": [
+                      {
+                        "message": "Tool performs outbound network access with user-influenced URL.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      },
+                      {
+                        "message": "Tool result is delivered automatically to model context.",
+                        "derived_from": [
+                          "template:SSRF_EXFIL"
+                        ]
+                      }
+                    ]
                   }
                 ],
                 "finding_class": "security",
                 "counterfactual_remediation": {
                   "triggered_by": [
-                    "SSRF_EXFIL: Remove or block outbound network tools and httpx/fetch sinks (refresh_cache)",
-                    "SSRF_EXFIL: Enforce URL allowlist and block RFC1918/metadata hosts (refresh_cache)"
+                    "SSRF_EXFIL: Remove or block outbound network tools and httpx/fetch sinks (build_status)",
+                    "SSRF_EXFIL: Enforce URL allowlist and block RFC1918/metadata hosts (build_status)"
                   ],
                   "removing_any_one_eliminates_finding": true,
                   "actions": [
@@ -6188,7 +6814,7 @@
                 "confidence": 0.7,
                 "analysis_mode": "static_heuristic",
                 "path": [
-                  "tool:refresh_cache",
+                  "tool:build_status",
                   "sink:external_network",
                   "sink:model_context"
                 ],
@@ -6215,7 +6841,7 @@
           "case": "unreachable-sink-001-reachable",
           "outcome": "tp",
           "findings": 5,
-          "seconds": 0.82,
+          "seconds": 0.92,
           "detail": [
             "Handler egress to HTTP client: build_status",
             "Untrusted input may reach sink on build_status",
@@ -6225,7 +6851,7 @@
           ],
           "raw": [
             {
-              "id": "net-net-01-19848",
+              "id": "net-net-01-52177",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: build_status",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -6586,7 +7212,7 @@
           "case": "untainted-sink-001",
           "outcome": "fp",
           "findings": 4,
-          "seconds": 0.89,
+          "seconds": 0.93,
           "detail": [
             "Command execution in disk_report: subprocess invocation",
             "Handler egress to HTTP client: disk_report",
@@ -6646,7 +7272,7 @@
               "rule_stability": "mature"
             },
             {
-              "id": "net-net-01-58723",
+              "id": "net-net-01-10281",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: disk_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -6899,7 +7525,7 @@
           "case": "untainted-sink-001-tainted",
           "outcome": "tp",
           "findings": 4,
-          "seconds": 0.69,
+          "seconds": 0.91,
           "detail": [
             "Command execution in disk_report: subprocess invocation",
             "Handler egress to HTTP client: disk_report",
@@ -6959,7 +7585,7 @@
               "rule_stability": "mature"
             },
             {
-              "id": "net-net-01-38885",
+              "id": "net-net-01-6516",
               "analyzer": "network_egress",
               "title": "Handler egress to HTTP client: disk_report",
               "description": "Tool handler or module reaches an HTTP client sink.",
@@ -7258,7 +7884,19 @@
           "vulnerable": "fn",
           "safe": "tn"
         },
+        "secret-exposure-001": {
+          "class": "CWE-200",
+          "discriminated": false,
+          "vulnerable": "fn",
+          "safe": "tn"
+        },
         "ssrf-001": {
+          "class": "CWE-918",
+          "discriminated": false,
+          "vulnerable": "tp",
+          "safe": "fp"
+        },
+        "ssrf-002-js": {
           "class": "CWE-918",
           "discriminated": false,
           "vulnerable": "tp",
@@ -7295,7 +7933,7 @@
           "safe": "fp"
         }
       },
-      "pairs_scored": 14,
+      "pairs_scored": 16,
       "pairs_discriminated": 1
     },
     {
@@ -7313,14 +7951,14 @@
       "counts": {
         "tp": 6,
         "fp": 3,
-        "tn": 11,
-        "fn": 8,
+        "tn": 13,
+        "fn": 10,
         "skipped": 0,
         "errors": 0
       },
       "precision": 0.6666666666666666,
-      "recall": 0.42857142857142855,
-      "f1": 0.5217391304347826,
+      "recall": 0.375,
+      "f1": 0.4800000000000001,
       "per_class": {
         "authz-session": {
           "tp": 0,
@@ -7388,13 +8026,31 @@
           "tn": 1,
           "fn": 0
         },
-        "CWE-918": {
+        "CWE-200": {
           "tp": 0,
           "fp": 0,
           "tn": 0,
           "fn": 1
         },
+        "safe-pair-of:secret-exposure-001": {
+          "tp": 0,
+          "fp": 0,
+          "tn": 1,
+          "fn": 0
+        },
+        "CWE-918": {
+          "tp": 0,
+          "fp": 0,
+          "tn": 0,
+          "fn": 2
+        },
         "safe-pair-of:ssrf-001": {
+          "tp": 0,
+          "fp": 0,
+          "tn": 1,
+          "fn": 0
+        },
+        "safe-pair-of:ssrf-002-js": {
           "tp": 0,
           "fp": 0,
           "tn": 1,
@@ -7442,7 +8098,7 @@
           "case": "authz-001",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.6,
+          "seconds": 1.72,
           "detail": [],
           "raw": []
         },
@@ -7450,7 +8106,7 @@
           "case": "authz-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.29,
           "detail": [],
           "raw": []
         },
@@ -7458,7 +8114,7 @@
           "case": "authz-002",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.23,
+          "seconds": 1.27,
           "detail": [],
           "raw": []
         },
@@ -7466,7 +8122,7 @@
           "case": "authz-002-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.22,
+          "seconds": 1.46,
           "detail": [],
           "raw": []
         },
@@ -7474,7 +8130,7 @@
           "case": "authz-003",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.19,
+          "seconds": 1.46,
           "detail": [],
           "raw": []
         },
@@ -7482,7 +8138,7 @@
           "case": "authz-003-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.48,
           "detail": [],
           "raw": []
         },
@@ -7490,7 +8146,7 @@
           "case": "authz-004-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.21,
+          "seconds": 1.3,
           "detail": [],
           "raw": []
         },
@@ -7498,7 +8154,7 @@
           "case": "authz-004-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.21,
+          "seconds": 1.27,
           "detail": [],
           "raw": []
         },
@@ -7506,14 +8162,14 @@
           "case": "cmd-injection-001",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.22,
+          "seconds": 1.27,
           "detail": [
             "Tool Misuse: Tool Parameter Abuse"
           ],
           "raw": [
             {
               "id": "TM1",
-              "finding_id": "finding-5e4e8e7e4d61469d8838c6f3b3a96029",
+              "finding_id": "finding-c6718454b5134dab97d1b332e8cb63f0",
               "category": "Tool Misuse",
               "pattern": "Tool Parameter Abuse",
               "severity": "HIGH",
@@ -7547,7 +8203,7 @@
           "case": "cmd-injection-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.22,
+          "seconds": 1.31,
           "detail": [],
           "raw": []
         },
@@ -7555,7 +8211,7 @@
           "case": "cmd-injection-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.3,
           "detail": [],
           "raw": []
         },
@@ -7563,7 +8219,7 @@
           "case": "cmd-injection-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.22,
+          "seconds": 1.36,
           "detail": [],
           "raw": []
         },
@@ -7571,7 +8227,7 @@
           "case": "path-traversal-001",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.19,
+          "seconds": 1.28,
           "detail": [],
           "raw": []
         },
@@ -7579,7 +8235,7 @@
           "case": "path-traversal-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.19,
+          "seconds": 1.3,
           "detail": [],
           "raw": []
         },
@@ -7587,7 +8243,7 @@
           "case": "path-traversal-002-js",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.29,
           "detail": [],
           "raw": []
         },
@@ -7595,7 +8251,23 @@
           "case": "path-traversal-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.23,
+          "seconds": 1.29,
+          "detail": [],
+          "raw": []
+        },
+        {
+          "case": "secret-exposure-001",
+          "outcome": "fn",
+          "findings": 0,
+          "seconds": 1.3,
+          "detail": [],
+          "raw": []
+        },
+        {
+          "case": "secret-exposure-001-safe",
+          "outcome": "tn",
+          "findings": 0,
+          "seconds": 1.31,
           "detail": [],
           "raw": []
         },
@@ -7603,7 +8275,7 @@
           "case": "ssrf-001",
           "outcome": "fn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.29,
           "detail": [],
           "raw": []
         },
@@ -7611,7 +8283,23 @@
           "case": "ssrf-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.21,
+          "seconds": 1.29,
+          "detail": [],
+          "raw": []
+        },
+        {
+          "case": "ssrf-002-js",
+          "outcome": "fn",
+          "findings": 0,
+          "seconds": 1.29,
+          "detail": [],
+          "raw": []
+        },
+        {
+          "case": "ssrf-002-js-safe",
+          "outcome": "tn",
+          "findings": 0,
+          "seconds": 1.31,
           "detail": [],
           "raw": []
         },
@@ -7619,14 +8307,14 @@
           "case": "tool-poisoning-001",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.22,
+          "seconds": 1.29,
           "detail": [
             "Privilege Escalation: Credential Access"
           ],
           "raw": [
             {
               "id": "PE3",
-              "finding_id": "finding-29e80f516e054a86b1ec6fc5e51a7d7c",
+              "finding_id": "finding-ab7972ae262e414d88ad7e841da8d17e",
               "category": "Privilege Escalation",
               "pattern": "Credential Access",
               "severity": "HIGH",
@@ -7660,7 +8348,7 @@
           "case": "tool-poisoning-001-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.29,
           "detail": [],
           "raw": []
         },
@@ -7668,14 +8356,14 @@
           "case": "tool-poisoning-002-js",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.2,
+          "seconds": 1.31,
           "detail": [
             "Privilege Escalation: Credential Access"
           ],
           "raw": [
             {
               "id": "PE3",
-              "finding_id": "finding-3d1bde3d36c34e308096c46a9135e269",
+              "finding_id": "finding-9102e13b50284b8080a57eaf3e2565d3",
               "category": "Privilege Escalation",
               "pattern": "Credential Access",
               "severity": "HIGH",
@@ -7709,7 +8397,7 @@
           "case": "tool-poisoning-002-js-safe",
           "outcome": "tn",
           "findings": 0,
-          "seconds": 1.2,
+          "seconds": 1.3,
           "detail": [],
           "raw": []
         },
@@ -7717,14 +8405,14 @@
           "case": "tool-poisoning-003",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.22,
+          "seconds": 1.29,
           "detail": [
             "Privilege Escalation: Credential Access"
           ],
           "raw": [
             {
               "id": "PE3",
-              "finding_id": "finding-7fae8c91816b445abc2b13cb05c63871",
+              "finding_id": "finding-40afdee84d7a4284aa269499703a7506",
               "category": "Privilege Escalation",
               "pattern": "Credential Access",
               "severity": "HIGH",
@@ -7758,7 +8446,7 @@
           "case": "tool-poisoning-003-safe",
           "outcome": "fp",
           "findings": 2,
-          "seconds": 1.24,
+          "seconds": 1.32,
           "detail": [
             "Privilege Escalation: Credential Access",
             "Privilege Escalation: Credential Access"
@@ -7766,7 +8454,7 @@
           "raw": [
             {
               "id": "PE3",
-              "finding_id": "finding-b192b4a7efcc4e6a8f66bb4e156b28b0",
+              "finding_id": "finding-c6a7cd0d761a4295979dc3955ef6eeb0",
               "category": "Privilege Escalation",
               "pattern": "Credential Access",
               "severity": "HIGH",
@@ -7796,7 +8484,7 @@
             },
             {
               "id": "PE3",
-              "finding_id": "finding-b192b4a7efcc4e6a8f66bb4e156b28b0",
+              "finding_id": "finding-c6a7cd0d761a4295979dc3955ef6eeb0",
               "category": "Privilege Escalation",
               "pattern": "Credential Access",
               "severity": "HIGH",
@@ -7830,14 +8518,14 @@
           "case": "unreachable-sink-001",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 1.2,
+          "seconds": 1.29,
           "detail": [
             "Tool Misuse: Tool Parameter Abuse"
           ],
           "raw": [
             {
               "id": "TM1",
-              "finding_id": "finding-6f48bb88a8684e81ac52a7533e728593",
+              "finding_id": "finding-5065e7ec54fa4390ac855a9498f18ab5",
               "category": "Tool Misuse",
               "pattern": "Tool Parameter Abuse",
               "severity": "HIGH",
@@ -7871,14 +8559,14 @@
           "case": "unreachable-sink-001-reachable",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.2,
+          "seconds": 1.32,
           "detail": [
             "Tool Misuse: Tool Parameter Abuse"
           ],
           "raw": [
             {
               "id": "TM1",
-              "finding_id": "finding-75ea5ca021e14a1594c89fc68757b711",
+              "finding_id": "finding-fecd0639b54b4f1dac92481e9e32e578",
               "category": "Tool Misuse",
               "pattern": "Tool Parameter Abuse",
               "severity": "HIGH",
@@ -7912,14 +8600,14 @@
           "case": "untainted-sink-001",
           "outcome": "fp",
           "findings": 1,
-          "seconds": 1.2,
+          "seconds": 1.3,
           "detail": [
             "Tool Misuse: Tool Parameter Abuse"
           ],
           "raw": [
             {
               "id": "TM1",
-              "finding_id": "finding-fb4b066fa27f43f89e628738f86d290e",
+              "finding_id": "finding-c34f27e457834a22a18fdae96678a918",
               "category": "Tool Misuse",
               "pattern": "Tool Parameter Abuse",
               "severity": "HIGH",
@@ -7953,14 +8641,14 @@
           "case": "untainted-sink-001-tainted",
           "outcome": "tp",
           "findings": 1,
-          "seconds": 1.25,
+          "seconds": 1.29,
           "detail": [
             "Tool Misuse: Tool Parameter Abuse"
           ],
           "raw": [
             {
               "id": "TM1",
-              "finding_id": "finding-1d372ff80ac7430099bd6985a1b03666",
+              "finding_id": "finding-0253a45b1aa14f419b61321fa16097ba",
               "category": "Tool Misuse",
               "pattern": "Tool Parameter Abuse",
               "severity": "HIGH",
@@ -8040,7 +8728,19 @@
           "vulnerable": "fn",
           "safe": "tn"
         },
+        "secret-exposure-001": {
+          "class": "CWE-200",
+          "discriminated": false,
+          "vulnerable": "fn",
+          "safe": "tn"
+        },
         "ssrf-001": {
+          "class": "CWE-918",
+          "discriminated": false,
+          "vulnerable": "fn",
+          "safe": "tn"
+        },
+        "ssrf-002-js": {
           "class": "CWE-918",
           "discriminated": false,
           "vulnerable": "fn",
@@ -8077,7 +8777,7 @@
           "safe": "fp"
         }
       },
-      "pairs_scored": 14,
+      "pairs_scored": 16,
       "pairs_discriminated": 3
     },
     {
@@ -8103,7 +8803,7 @@
         "tn": 0,
         "fn": 0,
         "skipped": 6,
-        "errors": 22
+        "errors": 26
       },
       "precision": null,
       "recall": null,
@@ -8191,12 +8891,32 @@
           "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
         },
         {
+          "case": "secret-exposure-001",
+          "outcome": "error",
+          "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
+        },
+        {
+          "case": "secret-exposure-001-safe",
+          "outcome": "error",
+          "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
+        },
+        {
           "case": "ssrf-001",
           "outcome": "error",
           "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
         },
         {
           "case": "ssrf-001-safe",
+          "outcome": "error",
+          "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
+        },
+        {
+          "case": "ssrf-002-js",
+          "outcome": "error",
+          "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
+        },
+        {
+          "case": "ssrf-002-js-safe",
           "outcome": "error",
           "why": "AttributeError: 'MCPPentester' object has no attribute 'send_notification'"
         },
