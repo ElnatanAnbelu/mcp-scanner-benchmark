@@ -2,13 +2,13 @@
 
 [![verify](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml/badge.svg)](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![cases](https://img.shields.io/badge/corpus-26%20cases%20%2F%2013%20pairs-informational)](corpus/cases)
+[![cases](https://img.shields.io/badge/corpus-28%20cases%20%2F%2014%20pairs-informational)](corpus/cases)
 [![ground truth](https://img.shields.io/badge/ground%20truth-executed-success)](corpus/verify.py)
 
 A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
 scanners over them and scores the answers.
 
-![Results: mcp-watch told apart 0 of 4 pairs, mcts 1 of 13, ramparts and cisco-mcp-scanner 2 of 2 each on metadata only, and mcpwn crashes on every case.](docs/social-preview.png)
+![Results: skillspector told apart 3 of 14 pairs, mcts 1 of 14, mcp-watch 0 of 4, ramparts and cisco-mcp-scanner 2 of 3 each on metadata only, mcpwn crashes on every case, and snyk, cisco behavioural and tencent need paid credentials.](docs/social-preview.png)
 
 The table above is generated from `harness/results-latest.json` by
 `tools/make_social_preview.py`, so it cannot drift away from what the harness measured.
@@ -53,16 +53,15 @@ Three other things fell out of running this:
 All of it reproduces with `python3 harness/run.py`. Details below, method and limitations in
 [METHODOLOGY.md](METHODOLOGY.md).
 
-Scope: five tools, 28 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
-agent-scan, Proximity and pipelock are missing, and they are missing because of install cost or
-account requirements, not because of anything they scored. Adding a scanner is a small pull
-request.
+Scope: eight tools, 28 cases. That is not the whole field. Proximity, pipelock and Docker's MCP
+Defender are missing, and three of the eight that are here could not be scored because they do
+not run without paid credentials. Adding a scanner is a small pull request.
 
 ## Status
 
-28 cases in 14 pairs, every label executed and verified. Six adapter configurations over five
-tools. Four produced scores: one tool is broken upstream, and one Cisco mode wants a paid API
-key.
+28 cases in 14 pairs, every label executed and verified. Nine adapter configurations over
+eight tools. Five produced scores: one tool is broken upstream, and three cannot run without a
+paid API key or account token.
 
 [METHODOLOGY.md](METHODOLOGY.md) covers how the scoring works and where it can be wrong.
 
@@ -72,6 +71,7 @@ key.
 | `path-traversal-001` | CWE-22 | Unconstrained join against a resolved containment check |
 | `ssrf-001` | CWE-918 | Any scheme and host against an allowlist plus destination check |
 | `tool-poisoning-001` | tool-poisoning | Hidden instructions against security words with no instruction |
+| `tool-poisoning-003` | tool-poisoning | An instruction to read `~/.ssh/id_rsa` against a description saying the tool never does |
 | `unreachable-sink-001` | CWE-78 | The same dangerous sink, wired to a tool or wired to nothing |
 | `untainted-sink-001` | CWE-78 | A live shell call: constant argument against the caller's string |
 | `authz-001` | authz-session | Broken object-level access. The caller names whose record to read |
@@ -160,8 +160,8 @@ output, so any row above can be traced back to what the tool actually said.
 
 ### Pair discrimination is the number I care about
 
-Recall hides the interesting failure. MCTS reports 69% recall and tells apart one pair out of
-thirteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
+Recall hides the interesting failure. MCTS reports 71% recall and tells apart one pair out of
+fourteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
 of its true positives are luck: it flagged something that appears in both files, and the label
 happened to line up.
 
@@ -263,7 +263,7 @@ findings including the taint path. Scan your repo the obvious way and you get a 
 health for a server with a critical injection in it.
 
 Put together: metadata is served well, by two tools at 100% with full pair discrimination.
-Source gets measured but not discriminated, with MCTS at 1/13, mcp-watch at 0/4 on JS/TS only,
+Source gets measured but not discriminated, with MCTS at 1/14, mcp-watch at 0/4 on JS/TS only,
 and one tool behind a paywall. Runtime is uncovered. That spread is the argument for the
 benchmark existing.
 
