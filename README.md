@@ -2,21 +2,21 @@
 
 [![verify](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml/badge.svg)](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![cases](https://img.shields.io/badge/corpus-28%20cases%20%2F%2014%20pairs-informational)](corpus/cases)
+[![cases](https://img.shields.io/badge/corpus-32%20cases%20%2F%2016%20pairs-informational)](corpus/cases)
 [![ground truth](https://img.shields.io/badge/ground%20truth-executed-success)](corpus/verify.py)
 
 A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
 scanners over them and scores the answers.
 
-![Results: skillspector told apart 3 of 14 pairs, mcts 1 of 14, mcp-watch 0 of 4, ramparts and cisco-mcp-scanner 2 of 3 each on metadata only, mcpwn crashes on every case, and snyk, cisco behavioural and tencent need paid credentials.](docs/social-preview.png)
+![Results: skillspector told apart 3 of 16 pairs, mcts 1 of 16, mcp-watch 0 of 5, ramparts and cisco-mcp-scanner 2 of 3 each on metadata only, mcpwn crashes on every case, and snyk, cisco behavioural and tencent need paid credentials.](docs/social-preview.png)
 
 The table above is generated from `harness/results-latest.json` by
 `tools/make_social_preview.py`, so it cannot drift away from what the harness measured.
 
 Every case has a safe twin: nearly the same file, with the vulnerability fixed. A scanner that
 gives both the same verdict has not detected anything, and recall will not tell you that
-happened. MCTS reports 71% recall and gives the vulnerable file and its fix the same verdict in
-13 of 14 pairs.
+happened. MCTS reports 69% recall and gives the vulnerable file and its fix the same verdict in
+15 of 16 pairs.
 
 Here is one pair. The two files differ in exactly one line of code.
 
@@ -53,13 +53,13 @@ Three other things fell out of running this:
 All of it reproduces with `python3 harness/run.py`. Details below, method and limitations in
 [METHODOLOGY.md](METHODOLOGY.md).
 
-Scope: eight tools, 28 cases. That is not the whole field. Proximity, pipelock and Docker's MCP
+Scope: eight tools, 32 cases. That is not the whole field. Proximity, pipelock and Docker's MCP
 Defender are missing, and three of the eight that are here could not be scored because they do
 not run without paid credentials. Adding a scanner is a small pull request.
 
 ## Status
 
-28 cases in 14 pairs, every label executed and verified. Nine adapter configurations over
+32 cases in 16 pairs, every label executed and verified. Nine adapter configurations over
 eight tools. Five produced scores: one tool is broken upstream, and three cannot run without a
 paid API key or account token.
 
@@ -74,12 +74,14 @@ paid API key or account token.
 | `tool-poisoning-003` | tool-poisoning | An instruction to read `~/.ssh/id_rsa` against a description saying the tool never does |
 | `unreachable-sink-001` | CWE-78 | The same dangerous sink, wired to a tool or wired to nothing |
 | `untainted-sink-001` | CWE-78 | A live shell call: constant argument against the caller's string |
+| `secret-exposure-001` | CWE-200 | A debug tool that returns the deploy token against one that masks it |
 | `authz-001` | authz-session | Broken object-level access. The caller names whose record to read |
 | `authz-002` | authz-session | Confused deputy. The caller names the tenant |
 | `authz-003` | authz-session | Privilege escalation. The caller states its own role |
 | `authz-004-js` | authz-session | The JavaScript twin of `authz-001` |
 | `cmd-injection-002-js` | CWE-78 | The JavaScript twin of `cmd-injection-001` |
 | `path-traversal-002-js` | CWE-22 | The JavaScript twin of `path-traversal-001` |
+| `ssrf-002-js` | CWE-918 | The JavaScript twin of `ssrf-001` |
 | `tool-poisoning-002-js` | tool-poisoning | The JavaScript twin of `tool-poisoning-001` |
 
 ## Why a benchmark instead of another scanner
@@ -109,7 +111,7 @@ ok    authz-001-safe
 ...
 ok    untainted-sink-001-tainted
 
-28/28 cases verified, 400 checks
+32/32 cases verified, 490 checks
 ```
 
 A proof also has to be honest about why it passed, which I learned the hard way. A tool that
@@ -124,12 +126,12 @@ with no sink or a safe case declaring a CWE class.
 
 ## Results
 
-Nine adapters over eight tools, 28 cases. Reproduce with `python3 harness/run.py`. Every number
+Nine adapters over eight tools, 32 cases. Reproduce with `python3 harness/run.py`. Every number
 names the version it came from.
 
-SkillSpector is the strongest source scanner measured: 3 of 14 pairs, against MCTS's 1 of 14,
+SkillSpector is the strongest source scanner measured: 3 of 16 pairs, against MCTS's 1 of 16,
 and the only one above 50% precision because it stays quiet on most safe twins rather than
-flagging everything. It is still 3 of 14.
+flagging everything. It is still 3 of 16.
 
 **Three of the eight tools cannot be run at all without paying.** Cisco's behavioural mode
 wants an LLM key, Snyk's agent-scan wants an account token and sends the analysis to their
@@ -139,11 +141,11 @@ nobody can reproduce for free is a property of the tool worth publishing.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|---------------------|
-| `skillspector/scan` | 2.11.0 @ 7805bb9 | source | Python, JS/TS | 6 | 3 | 11 | 8 | 67% | 43% | **3/14** |
+| `skillspector/scan` | 2.11.0 @ 7805bb9 | source | Python, JS/TS | 6 | 3 | 13 | 10 | 67% | 38% | **3/16** |
 | `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
 | `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
-| `mcts/scan` | 0.1.4 @ a058130 | source | Python, JS/TS | 10 | 9 | 5 | 4 | 53% | 71% | 1/14 |
-| `mcp-watch/scan-local` | 2.0.1 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | 0/4 |
+| `mcts/scan` | 0.1.4 @ a058130 | source | Python, JS/TS | 11 | 10 | 6 | 5 | 52% | 69% | 1/16 |
+| `mcp-watch/scan-local` | 2.0.1 | source | JS/TS only | 2 | 2 | 3 | 3 | 50% | 40% | 0/5 |
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
 | `snyk-agent-scan/scan` | 0.6.1 | metadata | any | | | | | | | needs SNYK_TOKEN |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
@@ -160,8 +162,8 @@ output, so any row above can be traced back to what the tool actually said.
 
 ### Pair discrimination is the number I care about
 
-Recall hides the interesting failure. MCTS reports 71% recall and tells apart one pair out of
-fourteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
+Recall hides the interesting failure. MCTS reports 69% recall and tells apart one pair out of
+sixteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
 of its true positives are luck: it flagged something that appears in both files, and the label
 happened to line up.
 
@@ -189,13 +191,13 @@ case. Both distinguish an instruction from security vocabulary; neither distingu
 benign mention of the file the instruction names.
 
 Scale matters too. They read live tool metadata, so the tool-poisoning pairs are the only ones in
-this corpus they can see and the other eleven get skipped. 2 of 3 and 1 of 14 are not the same
+this corpus they can see and the other thirteen get skipped. 2 of 3 and 1 of 16 are not the same
 achievement: one is a narrow surface mostly handled, the other is broad coverage that almost
 never discriminates.
 
 ### It is not a Python artifact
 
-Command injection, path traversal, tool poisoning and authorization each have a JavaScript twin
+Command injection, path traversal, SSRF, tool poisoning and authorization each have a JavaScript twin
 of the Python case, because I expected someone to ask. MCTS fails the JavaScript ones the same
 way it fails the Python ones, with `authz-004-js` and `path-traversal-002-js` both in the list it
 cannot tell apart. mcp-watch reads JS/TS only, gets four pairs it can see, and discriminates none
@@ -249,6 +251,14 @@ discrimination is a side effect rather than authorization analysis. On `authz-00
 This is why the class needed three variants. On `authz-001` by itself the result reads as a
 categorical zero, and I would have published an overclaim.
 
+**Nobody looks at what a tool returns.** `secret-exposure-001` is a deploy helper whose
+`debug_config` tool prints its configuration, deploy token included; the twin masks any value
+whose key looks like a credential. Every source scanner reports zero findings on both files.
+That is a clean categorical zero rather than a discrimination failure: no tool in this table
+treats a credential in a tool result as a problem, even though a tool result goes straight into
+the model's context and from there into logs and transcripts. It is the only class in the corpus
+where the safe twin is scored correctly by everyone, for the wrong reason.
+
 **Nothing reasons about reachability or taint either.** `unreachable-sink-001` and its twin hold
 the same `subprocess.run(..., shell=True)` helper and the same three tools, differing in one
 line: whether `refresh_cache` passes its argument to the helper or reads a dict. MCTS reports
@@ -263,7 +273,7 @@ findings including the taint path. Scan your repo the obvious way and you get a 
 health for a server with a critical injection in it.
 
 Put together: metadata is served well, by two tools at 100% with full pair discrimination.
-Source gets measured but not discriminated, with MCTS at 1/14, mcp-watch at 0/4 on JS/TS only,
+Source gets measured but not discriminated, with MCTS at 1/16, mcp-watch at 0/5 on JS/TS only,
 and one tool behind a paywall. Runtime is uncovered. That spread is the argument for the
 benchmark existing.
 

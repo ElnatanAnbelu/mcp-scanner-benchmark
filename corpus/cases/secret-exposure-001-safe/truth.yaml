@@ -1,0 +1,26 @@
+id: secret-exposure-001-safe
+language: python
+verdict: safe
+class: null
+title: Same debug tool, credential values masked before they leave the server
+
+sink: null
+
+surfaces: [source, runtime]
+
+entry:
+  tool: debug_config
+  parameter: null
+
+proof:
+  tool: debug_config
+  args: {}
+  oracle: MCPBENCH_OK
+  expect: absent
+
+pair: secret-exposure-001
+notes: >
+  The same deploy.env, the same token in it, the same tool listing the configuration.
+  Keys that look like credentials come back as ****. The token is still loaded and still
+  used by the server; it just never enters a tool result. Flagging this is a false
+  positive, and a scanner that flags deploy.env being read at all will flag both twins.

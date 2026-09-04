@@ -1,0 +1,33 @@
+id: ssrf-002-js
+language: javascript
+verdict: vulnerable
+class: CWE-918
+title: Unrestricted URL fetch, no scheme allowlist, no destination filter (JavaScript)
+
+sink:
+  file: server.js
+  line: 17
+  function: fetch
+  argument: url
+
+surfaces: [source, runtime]
+
+entry:
+  tool: fetch_preview
+  parameter: url
+  reachable: true
+
+proof:
+  tool: fetch_preview
+  listener: true
+  args:
+    url: "{listener}/latest/meta-data/"
+  oracle: MCPBENCH_OK
+  expect: present
+
+pair: ssrf-002-js-safe
+notes: >
+  The JavaScript twin of ssrf-001. Same proof: a loopback HTTP server the caller cannot
+  reach and the tool can, on a path shaped like a cloud metadata endpoint. Node's global
+  fetch follows the URL as given, so the defect is the absence of a check rather than the
+  presence of anything.
