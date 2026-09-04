@@ -5,18 +5,24 @@
 [![cases](https://img.shields.io/badge/corpus-32%20cases%20%2F%2016%20pairs-informational)](corpus/cases)
 [![ground truth](https://img.shields.io/badge/ground%20truth-executed-success)](corpus/verify.py)
 
-A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
-scanners over them and scores the answers.
+An evaluation harness for the tools that audit AI agents. It runs eight MCP scanners over a
+corpus of servers whose ground truth is executed rather than asserted, and scores what they
+report.
+
+It exists because the headline metric was lying. Recall said 69% for the scanner I trusted most.
+The metric this harness introduces, pair discrimination, said 1 of 16.
 
 ![Results: skillspector told apart 3 of 16 pairs, mcts 1 of 16, mcp-watch 0 of 5, ramparts and cisco-mcp-scanner 2 of 3 each on metadata only, mcpwn crashes on every case, and snyk, cisco behavioural and tencent need paid credentials.](docs/social-preview.png)
 
 The table above is generated from `harness/results-latest.json` by
 `tools/make_social_preview.py`, so it cannot drift away from what the harness measured.
 
-Every case has a safe twin: nearly the same file, with the vulnerability fixed. A scanner that
-gives both the same verdict has not detected anything, and recall will not tell you that
-happened. MCTS reports 69% recall and gives the vulnerable file and its fix the same verdict in
-15 of 16 pairs.
+Every case has a safe twin: nearly the same file, with the defect fixed. A tool that gives both
+the same verdict has not detected anything, it has produced a finding that happens to sit on the
+vulnerable file too. Precision and recall cannot see the difference, because both twins are
+separate rows in the confusion matrix and nothing ties them together. Pair discrimination does:
+a pair counts only when the vulnerable twin is flagged and its fix is not. MCTS reports 69%
+recall and fails 15 of 16 pairs.
 
 Here is one pair. The two files differ in exactly one line of code.
 
@@ -85,6 +91,15 @@ paid API key or account token.
 | `tool-poisoning-002-js` | tool-poisoning | The JavaScript twin of `tool-poisoning-001` |
 
 ## Why a benchmark instead of another scanner
+
+Any evaluation of a generative system faces the same problem this one does. Labels are expensive
+and usually asserted by whoever wrote them, so the benchmark's own correctness is the weakest
+link in every number it publishes. This corpus answers that by executing every label: a payload
+has to fire on the vulnerable case and fail on its twin, and CI fails when it stops doing either.
+The pair structure is the second half of the same idea, a control for every treatment, which is
+what turns a score into evidence.
+
+The subject happens to be security scanners because that is where the measurement gap was.
 
 Detection is crowded. VIPER-MCP published working exploit-confirmation tooling, Docker acquired
 MCP Defender, Snyk acquired Invariant Labs' mcp-scan, and NVIDIA, Tencent and Cisco all ship
