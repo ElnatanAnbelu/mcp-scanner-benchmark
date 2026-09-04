@@ -182,7 +182,7 @@ in that adapter's docstring.
 **A pair is discriminated only when the vulnerable twin is flagged and the safe twin is not.**
 
 This is the headline metric because precision and recall hide the failure this benchmark
-exists to expose. MCTS scores 71% recall and discriminates 1 of 14 pairs. It flags both twins
+exists to expose. MCTS scores 69% recall and discriminates 1 of 13 pairs. It flags both twins
 alike, so nearly every true positive is a coincidence: something present in both files, with the
 label happening to match.
 
@@ -251,7 +251,7 @@ the default-install gap is reported as a separate finding rather than as a bad s
 `FastMCP` may under-detect these servers for that reason alone rather than for anything to do
 with their analysis. MCTS is 0.1.4 and probably predates the rename. This is the most likely
 explanation a maintainer will reach for, and it is a fair one: a tool that identifies MCP
-servers by matching `FastMCP(` would find nothing to analyse in 22 of the 28 cases. The
+servers by matching `FastMCP(` would find nothing to analyse in 22 of the 26 cases. The
 JavaScript cases use `@modelcontextprotocol/sdk` 1.30.0, where `McpServer` is current, so the
 two halves of the corpus are not on equal footing here either. `requirements.txt` pins `mcp==2.1.1` so the corpus cannot shift underneath a result.
 

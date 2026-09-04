@@ -29,13 +29,15 @@ SOURCES = {
     "mcp-watch": ("npm", "mcp-watch"),
     "ramparts": ("crates", "ramparts"),
     "snyk-agent-scan": ("pypi", "snyk-agent-scan"),
-    "mcts": ("github-tag", "MCP-Audit/MCTS"),
-    "skillspector": ("github-tag", "NVIDIA/SkillSpector"),
+    "mcts": ("github-head", "MCP-Audit/MCTS"),
+    "skillspector": ("github-head", "NVIDIA/SkillSpector"),
     "tencent-mcp-scan": ("github-head", "Tencent/AI-Infra-Guard"),
     "mcpwn": ("github-head", "Teycir/Mcpwn"),
 }
 
-# Adapters pinned to a commit rather than a release carry it in the version string.
+# Tools installed from a checkout are compared by commit, not by tag. The GitHub tags API
+# orders by name, so it once reported MCTS "v1", a tag from before v0.1.4, as new; the
+# branch itself had moved 122 commits and no tag said so.
 # ramparts is both: a released binary, plus rules vendored from a commit.
 RULES_SOURCE = {"ramparts": ("github-head", "highflame-ai/ramparts")}
 
@@ -53,11 +55,6 @@ def latest(kind: str, ident: str) -> str:
         return get(f"https://registry.npmjs.org/{ident}/latest")["version"]
     if kind == "crates":
         return get(f"https://crates.io/api/v1/crates/{ident}")["crate"]["max_stable_version"]
-    if kind == "github-tag":
-        tags = get(f"https://api.github.com/repos/{ident}/tags?per_page=1")
-        if not tags:
-            raise LookupError("no tags")
-        return tags[0]["name"].lstrip("v")
     if kind == "github-head":
         commits = get(f"https://api.github.com/repos/{ident}/commits?per_page=1")
         return commits[0]["sha"]

@@ -2,13 +2,13 @@
 
 [![verify](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml/badge.svg)](https://github.com/ElnatanAnbelu/mcp-scanner-benchmark/actions/workflows/verify.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![cases](https://img.shields.io/badge/corpus-28%20cases%20%2F%2014%20pairs-informational)](corpus/cases)
+[![cases](https://img.shields.io/badge/corpus-26%20cases%20%2F%2013%20pairs-informational)](corpus/cases)
 [![ground truth](https://img.shields.io/badge/ground%20truth-executed-success)](corpus/verify.py)
 
 A set of MCP servers where I know which ones are vulnerable, and a harness that runs security
 scanners over them and scores the answers.
 
-![Results: skillspector told apart 3 of 14 pairs, mcts 1 of 14, mcp-watch 0 of 4, ramparts and cisco-mcp-scanner 2 of 3 each on metadata only, mcpwn crashes on every case, and snyk, cisco behavioural and tencent need paid credentials.](docs/social-preview.png)
+![Results: mcp-watch told apart 0 of 4 pairs, mcts 1 of 13, ramparts and cisco-mcp-scanner 2 of 2 each on metadata only, and mcpwn crashes on every case.](docs/social-preview.png)
 
 The table above is generated from `harness/results-latest.json` by
 `tools/make_social_preview.py`, so it cannot drift away from what the harness measured.
@@ -53,15 +53,16 @@ Three other things fell out of running this:
 All of it reproduces with `python3 harness/run.py`. Details below, method and limitations in
 [METHODOLOGY.md](METHODOLOGY.md).
 
-Scope: eight tools, 28 cases. That is not the whole field. Proximity, pipelock and Docker's MCP
-Defender are missing, and three of the eight that are here could not be scored because they do
-not run without paid credentials. Adding a scanner is a small pull request.
+Scope: five tools, 28 cases. That is not the whole field. SkillSpector, AI-Infra-Guard, Snyk's
+agent-scan, Proximity and pipelock are missing, and they are missing because of install cost or
+account requirements, not because of anything they scored. Adding a scanner is a small pull
+request.
 
 ## Status
 
-28 cases in 14 pairs, every label executed and verified. Nine adapter configurations over
-eight tools. Five produced scores: one tool is broken upstream, and three cannot run without a
-paid API key or account token.
+28 cases in 14 pairs, every label executed and verified. Six adapter configurations over five
+tools. Four produced scores: one tool is broken upstream, and one Cisco mode wants a paid API
+key.
 
 [METHODOLOGY.md](METHODOLOGY.md) covers how the scoring works and where it can be wrong.
 
@@ -71,7 +72,6 @@ paid API key or account token.
 | `path-traversal-001` | CWE-22 | Unconstrained join against a resolved containment check |
 | `ssrf-001` | CWE-918 | Any scheme and host against an allowlist plus destination check |
 | `tool-poisoning-001` | tool-poisoning | Hidden instructions against security words with no instruction |
-| `tool-poisoning-003` | tool-poisoning | An instruction to read `~/.ssh/id_rsa` against a description saying the tool never does |
 | `unreachable-sink-001` | CWE-78 | The same dangerous sink, wired to a tool or wired to nothing |
 | `untainted-sink-001` | CWE-78 | A live shell call: constant argument against the caller's string |
 | `authz-001` | authz-session | Broken object-level access. The caller names whose record to read |
@@ -139,11 +139,11 @@ nobody can reproduce for free is a property of the tool worth publishing.
 
 | Adapter | Version | Surface | Languages | tp | fp | tn | fn | Precision | Recall | Pairs discriminated |
 |---------|---------|---------|-----------|----|----|----|----|-----------|--------|---------------------|
-| `skillspector/scan` | 2.11.0 | source | Python, JS/TS | 6 | 3 | 11 | 8 | 67% | 43% | **3/14** |
+| `skillspector/scan` | 2.11.0 @ 7805bb9 | source | Python, JS/TS | 6 | 3 | 11 | 8 | 67% | 43% | **3/14** |
 | `ramparts/scan-config` | 0.8.8 (rules @ `70457db`) | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
 | `cisco-mcp-scanner/stdio+yara` | 4.8.4 | metadata | any | 3 | 1 | 2 | 0 | 75% | 100% | 2/3 |
-| `mcts/scan` | 0.1.4 | source | Python, JS/TS | 10 | 9 | 5 | 4 | 53% | 71% | 1/14 |
-| `mcp-watch/scan-local` | 2.0.0 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | 0/4 |
+| `mcts/scan` | 0.1.4 @ a058130 | source | Python, JS/TS | 10 | 9 | 5 | 4 | 53% | 71% | 1/14 |
+| `mcp-watch/scan-local` | 2.0.1 | source | JS/TS only | 1 | 1 | 3 | 3 | 50% | 25% | 0/4 |
 | `mcpwn/live` | 1.0 @ `6e9e8fc` | runtime | any | | | | | | | crashes on every case |
 | `snyk-agent-scan/scan` | 0.6.1 | metadata | any | | | | | | | needs SNYK_TOKEN |
 | `cisco-mcp-scanner/behavioural` | 4.8.4 | source | | | | | | | | needs a paid API key |
@@ -160,8 +160,8 @@ output, so any row above can be traced back to what the tool actually said.
 
 ### Pair discrimination is the number I care about
 
-Recall hides the interesting failure. MCTS reports 71% recall and tells apart one pair out of
-fourteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
+Recall hides the interesting failure. MCTS reports 69% recall and tells apart one pair out of
+thirteen. It flags the vulnerable case and its safe twin the same way nearly every time, so most
 of its true positives are luck: it flagged something that appears in both files, and the label
 happened to line up.
 
@@ -263,7 +263,7 @@ findings including the taint path. Scan your repo the obvious way and you get a 
 health for a server with a critical injection in it.
 
 Put together: metadata is served well, by two tools at 100% with full pair discrimination.
-Source gets measured but not discriminated, with MCTS at 1/14, mcp-watch at 0/4 on JS/TS only,
+Source gets measured but not discriminated, with MCTS at 1/13, mcp-watch at 0/4 on JS/TS only,
 and one tool behind a paywall. Runtime is uncovered. That spread is the argument for the
 benchmark existing.
 
@@ -341,7 +341,10 @@ Every result on this page is stamped with the version it was measured against, b
 scanner that improves next month does not make the old number a lie, it makes it dated.
 
 `tools/check-drift.py` asks PyPI, npm, crates.io and GitHub which of the measured tools have
-shipped something newer, and prints what has moved. A monthly job runs it and edits a single
+shipped something newer, and prints what has moved. Tools installed from a checkout carry
+their commit in the version column and are compared by commit, because tags are not enough:
+MCTS's newest tag by name is `v1`, which is older than `v0.1.4`, and mcp-watch 2.0.1 reports
+itself as 2.0.0, so both looked like drift when neither had moved. A monthly job runs it and edits a single
 open issue, so the gap between what is published and what upstream ships is visible to anyone
 reading the repository rather than only to whoever last ran the harness.
 
